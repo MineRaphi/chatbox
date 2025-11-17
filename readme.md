@@ -1,3 +1,3 @@
 # Chatbox
 
-Very Cool App
+Cool App
