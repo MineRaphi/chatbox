@@ -20,5 +20,6 @@
   },
   "devDependencies": {
     "electron": "^39.2.1"
-  }
+  },
+  "type": "module"
 }
