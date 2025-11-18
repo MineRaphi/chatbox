@@ -12,7 +12,7 @@
   },
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
+  "type": "module",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -20,6 +20,5 @@
   },
   "devDependencies": {
     "electron": "^39.2.1"
-  },
-  "type": "module"
+  }
 }
