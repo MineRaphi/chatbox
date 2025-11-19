@@ -1,0 +1,36 @@
+  /* Animation keyframes */
+    @keyframes shine {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Modern button style */
+    .modern-button {
+      position: relative;
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(90deg, #4f46e5, #3b82f6, #06b6d4);
+      background-size: 200% 100%;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* Hover effect */
+    .modern-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      background-position: 100% 0;
+      animation: shine 2s linear infinite;
+    }
+
+    /* Optional: focus effect */
+    .modern-button:focus {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.4);
+    }
