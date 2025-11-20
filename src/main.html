@@ -21,11 +21,27 @@
   </script>
 
 </head>
-  <body>
-    <div class="titlebar self-start"></div>
-    <div class="flex  min-h-screen bg-cover bg-center bg-gradient-to-br from-neutral-800 to-purple-500">
-        <button class="object-bottom-left uploadButton" onclick="window.location.href='upload.html'">test</button>
 
+
+    <!-- Sidebar -->
+    <div class="w-20 bg-neutral-500 flex flex-col items-center py-4 space-y-4">
+        <!-- Example buttons/icons (replace later) -->
+        <button class="p-3 rounded hover:bg-gray-700" title="Settings">
+        <img src="../img/settings.jpg">
+        </button>
+        <button class="p-3 rounded hover:bg-gray-700" title="Chat">
+        <img src="../img/chat.jpg">
+        </button>
+        <button class="p-3 rounded hover:bg-gray-700" title="Profile">
+        <img src="../img/profile.webp">
+        </button>
+        <button class="object-bottom-left uploadButton" onclick="window.location.href='upload.html'"></button> <!-- Upload button -->
     </div>
-  </body>
+
+    <!-- Main content -->
+    <div id="mainContent" class="flex-1 bg-gradient-to-br from-neutral-800 to-purple-500 p-6">
+        <h1 class="text-white text-2xl font-bold">Main Content Area</h1>
+        <p class="text-gray-300 mt-2">This is where your page content will go.</p>
+    </div>
+    </body>
 </html>
