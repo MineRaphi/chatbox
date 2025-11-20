@@ -13,6 +13,7 @@
   "license": "ISC",
   "author": "",
   "type": "module",
+  "type": "module",
   "main": "main.js",
   "scripts": {
     "electron": "electron .",
@@ -22,8 +23,8 @@
     "electron": "^39.2.1"
   },
   "dependencies": {
+    "socket.io-client": "^4.8.1",
     "@tailwindcss/cli": "^4.1.17",
-    "socket.io": "^4.8.1",
     "tailwindcss": "^4.1.17"
   }
 }
