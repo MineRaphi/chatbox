@@ -1,4 +1,7 @@
 import { app, BrowserWindow } from 'electron'
+import { io } from "socket.io-client";
+
+const socket = io();
 
 function createWindow() {
   const win = new BrowserWindow({

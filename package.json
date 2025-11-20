@@ -20,5 +20,8 @@
   },
   "devDependencies": {
     "electron": "^39.2.1"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.8.1"
   }
 }
