@@ -1,13 +1,21 @@
-import { io } from "https://cdn.socket.io/4.7.1/socket.io.esm.min.js";
+// This renderer script now communicates with the main process for socket events.
+console.log('Renderer: setting up socket IPC listeners')
 
-console.log("Attempting to connect to server...");
+if (window.electronSocket) {
+    window.electronSocket.onConnect((id) => {
+        console.log('Connected to server via main process with id:', id)
+    })
 
-const socket = io("http://localhost:3000" );
+    window.electronSocket.onHeartbeat((data) => {
+        console.log('heartbeat', data)
+    })
 
-socket.on("connect", () => {
-    console.log("Connected to server with id:", socket.id);
-});
+    window.electronSocket.onDisconnect((reason) => {
+        console.log('socket disconnected:', reason)
+    })
+} else {
+    console.warn('electronSocket API not available. Are you running inside Electron with the preload script?')
+}
 
-socket.on("heartbeat", (data) => {
-    console.log(data);
-});
+// Example: to emit an event to the server via main process:
+// window.electronSocket.emit('some-event', { hello: 'world' })
