@@ -12,13 +12,18 @@
   },
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
+  "type": "module",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "electron": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
     "electron": "^39.2.1"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.17",
+    "socket.io": "^4.8.1",
+    "tailwindcss": "^4.1.17"
   }
 }
