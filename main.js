@@ -2,7 +2,6 @@ import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 
 import path from 'path'; // Node path module
 
-
 function createWindow() {
   const win = new BrowserWindow({
     ...(process.platform !== 'darwin' ? { titleBarOverlay: true } : {}),
