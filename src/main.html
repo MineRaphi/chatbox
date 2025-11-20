@@ -21,25 +21,57 @@
   </script>
 
 </head>
-    <body class="min-h-screen flex">
-    <!-- Sidebar -->
-    <div class="w-20 bg-neutral-500 flex flex-col items-center py-4 space-y-4">
-        <!-- Example buttons/icons (replace later) -->
-        <button class="p-3 rounded hover:bg-gray-700" title="Settings">
-        <img src="../img/settings.jpg">
-        </button>
-        <button class="p-3 rounded hover:bg-gray-700" title="Chat">
-        <img src="../img/chat.jpg">
-        </button>
-        <button class="p-3 rounded hover:bg-gray-700" title="Profile">
-        <img src="../img/profile.webp">
-        </button>
-    </div>
+  <body class="min-h-screen bg-gradient-to-br from-neutral-800 to-purple-500">
+      <!-- Floating Sidebar-->
+      <div class="fixed left-4 top-4 bottom-4 
+                  w-20 bg-neutral-700/80 backdrop-blur-md
+                  flex flex-col items-center py-4 space-y-4
+                  rounded-3xl shadow-xl border border-neutral-600/50">
+          <!-- Buttons -->
+          <button id="profileBtn" class="p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
+              <img class="w-8 h-8" src="../img/profileborder.png">
+          </button>
 
-    <!-- Main content -->
-    <div id="mainContent" class="flex-1 bg-gradient-to-br from-neutral-800 to-purple-500 p-6">
-        <h1 class="text-white text-2xl font-bold">Main Content Area</h1>
-        <p class="text-gray-300 mt-2">This is where your page content will go.</p>
-    </div>
-    </body>
+          <button id="settingsBtn" class="p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
+              <img class="w-8 h-8" src="../img/setting.png">
+          </button>
+
+          <button id="chatBtn" class="p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
+              <img class="w-8 h-8" src="../img/chat.png">
+          </button>
+      </div>
+
+      <!-- Horizontal bottom bar -->
+      <div class="fixed bottom-4 left-28 right-4
+                  bg-neutral-700/80 backdrop-blur-md
+                  flex flex-row justify-around items-center py-4
+                  rounded-3xl shadow-xl border border-neutral-600/50 space-x-4">
+      </div>
+
+      <!-- Main content -->
+      <div id="mainContent" class="p-6">
+      </div>
+
+      <!--Settings Panel-->
+  <div id="settingsPanel" class="fixed top-20 left-20 w-96 h-64 bg-white rounded-xl shadow-xl p-6 hidden">
+    <h2 class="text-xl font-bold mb-4">Settings</h2>
+    <p>Here is your settings panel. You can interact with it.</p>
+    <button id="closeSettings" class="mt-4 px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition">Close</button>
+  </div>
+    <script>
+      const settingsBtn = document.getElementById('settingsBtn');
+      const settingsPanel = document.getElementById('settingsPanel');
+      const closeSettings = document.getElementById('closeSettings');
+
+      // Show panel when button clicked
+      settingsBtn.addEventListener('click', () => {
+        settingsPanel.classList.toggle('hidden');
+      });
+
+      // Close panel
+      closeSettings.addEventListener('click', () => {
+        settingsPanel.classList.add('hidden');
+      });
+    </script>
+  </body>
 </html>
