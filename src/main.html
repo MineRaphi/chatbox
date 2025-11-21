@@ -36,6 +36,13 @@
           <button id="chatBtn" class="a p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
               <img class="w-8 h-8" src="../img/chat2.png">
           </button>
+          
+          <!-- Upload Button at the bottom -->
+          <div class="flex-grow"></div>
+          <button id="uploadBtn" class="a p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer mb-2">
+              <img class="w-8 h-8" src="../img/upload.png" alt="Upload">
+              <span class="sr-only">Upload</span>
+          </button>
       </div>
 
       <!-- Horizontal bottom bar -->
@@ -59,6 +66,7 @@
       const settingsBtn = document.getElementById('settingsBtn');
       const settingsPanel = document.getElementById('settingsPanel');
       const closeSettings = document.getElementById('closeSettings');
+      const uploadBtn = document.getElementById('uploadBtn');
 
       // Show panel when button clicked
       settingsBtn.addEventListener('click', () => {
@@ -68,6 +76,11 @@
       // Close panel
       closeSettings.addEventListener('click', () => {
         settingsPanel.classList.add('hidden');
+      });
+
+      // Navigate to upload.html when upload button is clicked
+      uploadBtn.addEventListener('click', () => {
+        window.location.href = 'upload.html';
       });
     </script>
     <script type="module" src="scripts.js"></script>
