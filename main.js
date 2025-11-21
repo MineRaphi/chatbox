@@ -1,4 +1,6 @@
-import { app, BrowserWindow } from'electron/main'
+import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
+
+import path from 'path'; // Node path module
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -18,4 +20,22 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow()
+
+  // Listen for shortcut messages from renderer
+ipcMain.handle('set-shortcut', (event, shortcut) => {
+  // Remove old shortcuts
+  globalShortcut.unregisterAll();
+
+  // Register new global shortcut
+  const success = globalShortcut.register(shortcut, () => {
+    console.log('GLOBAL HOTKEY TRIGGERED:', shortcut);
+    // Do your action here
+  });
+
+  if (!success) {
+    console.log('Failed to register shortcut:', shortcut);
+  }
+});
+
 })
+
