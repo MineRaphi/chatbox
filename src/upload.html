@@ -15,7 +15,7 @@
     <div class="max-w-3xl mx-auto p-6 mt-12">
     <header class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-bold">Upload</h1>
-        <a href="main.html" class="back-btn"  role="button" aria-label="Go back" tabindex="0">
+        <a href="main.html" class="backButton" role="button" aria-label="Go back" tabindex="0">
           <img src="../img/back.png" alt="back">
         </a>
     </header>
@@ -129,7 +129,7 @@
     renderPreview();
 
  
-      document.querySelectorAll('..backButton').forEach(btn => {
+      document.querySelectorAll('.backButton').forEach(btn => {
         btn.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();

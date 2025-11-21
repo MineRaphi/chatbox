@@ -70,20 +70,13 @@ body {
   width: 32px;
   height: 32px;
 }
-
-/* Ensure kebab-case .back-btn used in HTML matches styling and is half the size */
-.back-btn {
+.backButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 4px;
   border-radius: 8px;
   transition: box-shadow 0.15s ease;
-}
-.back-btn img {
-  width: 32px;
-  height: 32px;
-  display: block;
 }
 .backButton:hover,
 .backButton:focus {
@@ -94,9 +87,8 @@ body {
   outline-offset: 2px;
 }
 
-
-#clearButton:hover,
-#clearButton:focus {
+#clearBtn:hover,
+#clearBtn:focus {
   outline: 2px solid rgba(239,68,68,0.20);
   outline-offset: 3px;
   box-shadow: 0 6px 18px rgba(239,68,68,0.08);
