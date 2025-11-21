@@ -60,16 +60,44 @@
       const settingsPanel = document.getElementById('settingsPanel');
       const closeSettings = document.getElementById('closeSettings');
 
-      // Show panel when button clicked
+      const profilePanel2 = document.getElementById('profilePanel'); 
+
+      // Show settings panel
       settingsBtn.addEventListener('click', () => {
         settingsPanel.classList.toggle('hidden');
+        profilePanel.classList.add('hidden');   // <-- CLOSE THE OTHER PANEL
       });
 
-      // Close panel
       closeSettings.addEventListener('click', () => {
         settingsPanel.classList.add('hidden');
       });
     </script>
+
+          <!--Profile Panel-->
+  <div id="profilePanel" class="fixed top-5 left-30 text-white w-96 h-120 border-white/20 bg-black/20 border-2 backdrop-blur-lg  rounded-xl shadow-xl p-6 hidden">
+    <h2 class="text-xl font-bold mb-4">-Username-</h2>
+    <p></p>
+    <button id="closeProfile" class="mt-4 mr-4 object-top-left px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition"> <img src=""> </button>
+  </div>
+    <script>
+      const profileBtn = document.getElementById('profileBtn');
+      const profilePanel = document.getElementById('profilePanel');
+      const closeProfile = document.getElementById('closeProfile');
+
+      const settingsPanel2 = document.getElementById('settingsPanel'); // <-- added
+
+      // Show profile panel
+      profileBtn.addEventListener('click', () => {
+        profilePanel.classList.toggle('hidden');
+        settingsPanel.classList.add('hidden');   // <-- CLOSE THE OTHER PANEL
+      });
+
+      closeProfile.addEventListener('click', () => {
+        profilePanel.classList.add('hidden');
+      });
+    </script>
+
+
     <script type="module" src="scripts.js"></script>
   </body>
 </html>
