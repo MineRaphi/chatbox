@@ -22,7 +22,7 @@
 
 </head>
   <body class="min-h-screen bg-gradient-to-br from-neutral-800 to-purple-500">
-      <!-- Floating Sidebar-->
+      <!-- Sidebar-->
       <div class="fixed left-4 top-4 bottom-4 w-20 border-2 border-white/20 bg-black/20 backdrop-blur-lg flex flex-col items-center py-4 space-y-4 rounded-3xl shadow-xl">
           <!-- Buttons -->
           <button id="profileBtn" class="a p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
@@ -42,7 +42,7 @@
             </button>
       </div>
 
-      <!-- Horizontal bottom bar -->
+      <!--bottom bar -->
       <div class="fixed bottom-4 left-28 right-4
                   border-2 border-white/20 bg-black/20 backdrop-blur-lg
                   flex flex-row justify-around items-center py-4
@@ -66,10 +66,9 @@
 
       const profilePanel2 = document.getElementById('profilePanel'); 
 
-      // Show settings panel
       settingsBtn.addEventListener('click', () => {
         settingsPanel.classList.toggle('hidden');
-        profilePanel.classList.add('hidden');   // <-- CLOSE THE OTHER PANEL
+        profilePanel.classList.add('hidden');   
       });
 
       closeSettings.addEventListener('click', () => {
@@ -88,12 +87,11 @@
       const profilePanel = document.getElementById('profilePanel');
       const closeProfile = document.getElementById('closeProfile');
 
-      const settingsPanel2 = document.getElementById('settingsPanel'); // <-- added
-
-      // Show profile panel
+      const settingsPanel2 = document.getElementById('settingsPanel'); 
+     
       profileBtn.addEventListener('click', () => {
         profilePanel.classList.toggle('hidden');
-        settingsPanel.classList.add('hidden');   // <-- CLOSE THE OTHER PANEL
+        settingsPanel.classList.add('hidden');  
       });
 
       closeProfile.addEventListener('click', () => {
