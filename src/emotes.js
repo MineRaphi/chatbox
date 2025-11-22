@@ -56,21 +56,22 @@ async function fetchEmotes() {
             // Split by whitespace
             const words = text.split(/\s+/);
 
-            words.forEach(word => {
-                // Find emote by name (case-insensitive)
-                const emote = emotesCache.find(e => e.name.toLowerCase() === word.toLowerCase());
-                if (emote) {
-                    const img = document.createElement("img");
-                    img.src = emote.url;
-                    img.className = "inline-block w-8 h-8 mr-1 emote";
-                    chatMessages.appendChild(img);
-                } else {
-                    const span = document.createElement("span");
-                    span.textContent = word + " ";
-                    span.className = "text-white";
-                    chatMessages.appendChild(span);
-                }
-            });
+                words.forEach(word => {
+                    // Find emote by name (case-insensitive)
+                    const emote = emotesCache.find(e => e.name.toLowerCase() === word.toLowerCase());
+                    if (emote) {
+                        const img = document.createElement("img");
+                        img.src = emote.url;
+                        img.className = "inline-block h-8 align-middle mr-1 emote";
+                        img.style.marginBottom = "0.25rem";
+                        chatMessages.appendChild(img);
+                    } else {
+                        const span = document.createElement("span");
+                        span.textContent = word + " ";
+                        span.className = "text-white";
+                        chatMessages.appendChild(span);
+                    }
+                });
 
             chatMessages.appendChild(document.createElement("br"));
             chatMessages.scrollTop = chatMessages.scrollHeight;
