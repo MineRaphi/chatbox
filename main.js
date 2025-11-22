@@ -9,50 +9,26 @@ const __dirname = path.dirname(__filename)
 let socket
 
 function createWindow() {
-  const win = new BrowserWindow({
-    ...(process.platform !== 'darwin' ? { titleBarOverlay: true } : {}),
-    width: 800,
-    height: 600,
-    titleBarStyle: 'hidden',
-    webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-        contextIsolation: true,
-        nodeIntegration: false
-    },
-    titleBarOverlay: {
-        color: "rgba(0, 0, 0, 0)",
-        symbolColor: '#ffffff',
-        height: 20
-    }
-})
-
-  win.loadFile('index.html')
-
-  // Initialize socket when window is ready (or earlier if you prefer)
-  if (!socket) {
-    socket = io('http://localhost:3000')
-
-    socket.on('connect', () => {
-        console.log('Socket connected (main):', socket.id)
-        BrowserWindow.getAllWindows().forEach(w => {
-            w.webContents.send('socket:connect', socket.id)
-        })
+    const win = new BrowserWindow({
+        ...(process.platform !== 'darwin' ? { titleBarOverlay: true } : {}),
+        width: 800,
+        height: 600,
+        titleBarStyle: 'hidden',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+        },
+        titleBarOverlay: {
+            color: "rgba(0, 0, 0, 0)",
+            symbolColor: '#ffffff',
+            height: 20
+        }
     })
 
-    socket.on('heartbeat', (data) => {
-        BrowserWindow.getAllWindows().forEach(w => {
-            w.webContents.send('socket:heartbeat', data)
-        })
-    })
+    win.loadFile('index.html')
 
-    socket.on('disconnect', (reason) => {
-        BrowserWindow.getAllWindows().forEach(w => {
-            w.webContents.send('socket:disconnect', reason)
-        })
-    })
-  }
-
-  return win
+    return win
 }
 
 // Forward messages from renderer to the socket server
@@ -61,6 +37,33 @@ ipcMain.on('socket:emit', (event, { eventName, payload }) => {
         socket.emit(eventName, payload)
     }
 })
+
+ipcMain.on('server:select', (event, { ip, port }) => {
+    console.log(`trying to connect to server ${ip}:${port}`)
+    if (!socket) {
+        socket = io(`http://${ip}:${port}`)
+
+        socket.on('connect', () => {
+            console.log('Socket connected (main):', socket.id)
+            BrowserWindow.getAllWindows().forEach(w => {
+                w.webContents.send('socket:connect', socket.id)
+            })
+        })
+
+        socket.on('heartbeat', (data) => {
+            BrowserWindow.getAllWindows().forEach(w => {
+                w.webContents.send('socket:heartbeat', data)
+            })
+        })
+
+        socket.on('disconnect', (reason) => {
+            BrowserWindow.getAllWindows().forEach(w => {
+                w.webContents.send('socket:disconnect', reason)
+            })
+        })
+    }
+})
+
 
 app.whenReady().then(() => {
     createWindow()
