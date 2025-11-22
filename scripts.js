@@ -11,3 +11,4 @@ socket.on("connect", () => {
 socket.on("heartbeat", (data) => {
     console.log(data);
 });
+
