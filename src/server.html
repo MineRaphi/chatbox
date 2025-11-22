@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbox</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" type="text/css" href="script.js">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+   <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1d4ed8'
+          }
+        }
+      }
+    }
+  </script>
+
+</head> 
+  <body>
+    <div class="titlebar self-start"></div>
+      <div class="flex items-center justify-center min-h-screen bg-cover bg-center bg-gradient-to-br from-neutral-800 to-purple-500">
+        <div class="relative drop-shadow-xl w-80 h-100 overflow-hidden rounded-xl bg-[#3d3c3d]">
+          <div class="absolute flex flex-col items-center justify-start text-white z-[1] opacity-90 rounded-xl inset-0.5 bg-[#323132]">
+              <p class="items-top font-mono mt-10 font-bold">Select Server</p>
+                <div class="flex flex-col items-center w-full mt-6 mt-10 space-y-3">
+              <input id="ip"
+                    type="text"
+                    placeholder="IP"
+                    class="w-56 px-3 py-2 rounded-md bg-[#2b2b2b] text-white border border-neutral-600 focus:outline-none focus:border-purple-300">
+
+              <input id="port"
+                    type="test"
+                    placeholder="Port"
+                    class="w-56 px-3 py-2 rounded-md bg-[#2b2b2b] text-white border border-neutral-600 focus:outline-none focus:border-purple-300">
+
+              <button id="connectBtn"
+                      class="w-56 py-2 rounded-md bg-purple-500 hover:bg-purple-600 font-bold transition">
+                Connect to Server
+              </button>
+
+              <div id="error" class="text-red-400 text-sm"></div>
+            </div>
+          </div>
+        <div class="absolute w-56 h-48 bg-white blur-[50px] -left-1/2 -top-1/2"></div>
+      </div>
+    </div>
+    <script type="module" src="scripts.js"></script>
+  </body>
+</html>
