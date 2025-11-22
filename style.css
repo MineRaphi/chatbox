@@ -99,9 +99,25 @@ button svg {
 
 /* Make the upload/back small icon smaller (half size) */
 .backButton img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+
+.backButton:hover,
+.backButton:focus {
+  box-shadow: 0 8px 28px rgba(99,102,241,0.18), 0 2px 8px rgba(59,130,246,0.08);
+}
+.backButton:focus {
+  outline: 2px solid rgba(99,102,241,0.18);
+  outline-offset: 2px;
+}
+
+#clearBtn:hover,
+#clearBtn:focus {
+  outline: 2px solid rgba(239,68,68,0.20);
+  outline-offset: 3px;
+  box-shadow: 0 6px 18px rgba(239,68,68,0.08);
 }
 
 
