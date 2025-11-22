@@ -22,7 +22,7 @@
 
 </head>
   <body class="min-h-screen bg-gradient-to-br from-neutral-800 to-purple-500">
-      <!-- Floating Sidebar-->
+      <!-- Sidebar-->
       <div class="fixed left-4 top-4 bottom-4 w-20 border-2 border-white/20 bg-black/20 backdrop-blur-lg flex flex-col items-center py-4 space-y-4 rounded-3xl shadow-xl">
           <!-- Buttons -->
           <button id="profileBtn" class="a p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
@@ -42,7 +42,7 @@
             </button>
       </div>
 
-      <!-- Horizontal bottom bar -->
+      <!--bottom bar -->
       <div class="fixed bottom-4 left-28 right-4
                   border-2 border-white/20 bg-black/20 backdrop-blur-lg
                   flex flex-row justify-around items-center py-4
@@ -65,12 +65,13 @@
       const closeSettings = document.getElementById('closeSettings');
       const uploadBtn = document.getElementById('uploadBtn');
 
-      // Show panel when button clicked
+      const profilePanel2 = document.getElementById('profilePanel'); 
+
       settingsBtn.addEventListener('click', () => {
         settingsPanel.classList.toggle('hidden');
+        profilePanel.classList.add('hidden');   
       });
 
-      // Close panel
       closeSettings.addEventListener('click', () => {
         settingsPanel.classList.add('hidden');
       });
@@ -80,6 +81,31 @@
         window.location.href = 'upload.html';
       });
     </script>
+
+          <!--Profile Panel-->
+  <div id="profilePanel" class="fixed top-5 left-30 text-white w-96 h-120 border-white/20 bg-black/20 border-2 backdrop-blur-lg  rounded-xl shadow-xl p-6 hidden">
+    <h2 class="text-xl font-bold mb-4">-Username-</h2>
+    <p></p>
+    <button id="closeProfile" class="mt-4 mr-4 object-top-left px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition"> <img src=""> </button>
+  </div>
+    <script>
+      const profileBtn = document.getElementById('profileBtn');
+      const profilePanel = document.getElementById('profilePanel');
+      const closeProfile = document.getElementById('closeProfile');
+
+      const settingsPanel2 = document.getElementById('settingsPanel'); 
+     
+      profileBtn.addEventListener('click', () => {
+        profilePanel.classList.toggle('hidden');
+        settingsPanel.classList.add('hidden');  
+      });
+
+      closeProfile.addEventListener('click', () => {
+        profilePanel.classList.add('hidden');
+      });
+    </script>
+
+
     <script type="module" src="scripts.js"></script>
   </body>
 </html>
