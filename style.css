@@ -70,14 +70,7 @@ body {
   width: 32px;
   height: 32px;
 }
-.backButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 8px;
-  transition: box-shadow 0.15s ease;
-}
+
 .backButton:hover,
 .backButton:focus {
   box-shadow: 0 8px 28px rgba(99,102,241,0.18), 0 2px 8px rgba(59,130,246,0.08);
