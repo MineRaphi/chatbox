@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chatbox</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" type="text/css" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
    <script>
@@ -38,7 +38,7 @@
       </div>
 
       <!--bottom bar -->
-      <div class="fixed bottom-4 left-28 right-4
+      <div class="fixed bottom-4 h-20 left-28 right-4
                   border-2 border-white/20 bg-black/20 backdrop-blur-lg
                   flex flex-row justify-around items-center py-4
                   rounded-3xl shadow-xl space-x-4">
@@ -47,7 +47,7 @@
       <!-- Main content -->
       <div id="mainContent" class="p-6">
                 <!-- Chat Panel -->
-        <div id="chatPanel" class="fixed bottom-30 mt-5 ml-80 left-28 right-4 h-110 border-2 border-white/20 bg-black/20 backdrop-blur-lg rounded-xl shadow-xl p-4 flex flex-col">
+        <div id="chatPanel" class="fixed bottom-30 mt-5 ml-70 left-28 right-4 h-110 border-2 border-white/20 bg-black/20 backdrop-blur-lg rounded-xl shadow-xl p-4 flex flex-col">
             <div id="chatMessages" class="flex-1 overflow-y-auto mb-2"></div>
             <input id="chatInput" type="text" placeholder="write something" 
                   class="text-white caret-white placeholder-white/50 rounded-lg w-full p-2 rounded border-white/20 bg-black/20 backdrop-blur-lg focus:outline-none"/>
@@ -65,7 +65,7 @@
       </div>
 
       <!--Settings Panel-->
-  <div id="settingsPanel" class="fixed top-5 left-30 text-white w-70 h-110 mt-5 border-white/20 bg-black/20 border-2 backdrop-blur-lg  rounded-xl shadow-xl p-6 hidden">
+  <div id="settingsPanel" class="fixed top-5 left-28 text-white w-65 h-110 mt-5 border-white/20 bg-black/20 border-2 backdrop-blur-lg  rounded-xl shadow-xl p-6 hidden">
     <h2 class="text-xl font-bold mb-4">Settings</h2>
     <p></p>
     <button id="closeSettings" class="mt-4 px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition"> <img src=""> </button>
@@ -94,7 +94,7 @@
     </script>
 
           <!--Profile Panel-->
-  <div id="profilePanel" class="fixed top-5 left-30 text-white w-70 h-110 mt-5 border-white/20 bg-black/20 border-2 backdrop-blur-lg  rounded-xl shadow-xl p-6 hidden">
+  <div id="profilePanel" class="fixed top-5 left-28 text-white w-65 h-110 mt-5 border-white/20 bg-black/20 border-2 backdrop-blur-lg  rounded-xl shadow-xl p-6 hidden">
     <h2 class="text-xl font-bold mb-4">-Username-</h2>
     <p></p>
     <button id="closeProfile" class="mt-4 mr-4 object-top-left px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition"> <img src=""> </button>
