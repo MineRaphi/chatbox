@@ -15,6 +15,11 @@ if (window.electronSocket) {
         console.log('socket disconnected:', reason)
     })
 
+    window.electronSocket.onError((error) => {
+        console.error('Socket connection error:', error);
+        document.getElementById("errorText").style.display = "block";
+    });
+
     document.getElementById("connectBtn").addEventListener("click", function() {
         console.log("BUTTON CLICKED");
         const ip = document.getElementById("ip").value;

@@ -41,7 +41,11 @@ ipcMain.on('socket:emit', (event, { eventName, payload }) => {
 ipcMain.on('server:select', (event, { ip, port }) => {
     console.log(`trying to connect to server ${ip}:${port}`)
     if (!socket) {
-        socket = io(`http://${ip}:${port}`)
+        // disable automatic reconnection so connect_error fires only once per attempt
+        socket = io(`http://${ip}:${port}`, {
+            reconnection: false,
+            timeout: 5000
+        })
 
         socket.on('connect', () => {
             console.log('Socket connected (main):', socket.id)
@@ -61,6 +65,14 @@ ipcMain.on('server:select', (event, { ip, port }) => {
                 w.webContents.send('socket:disconnect', reason)
             })
         })
+
+        socket.on('connect_error', (err) => {
+            console.error('Failed to connect to server:', err.message);
+            BrowserWindow.getAllWindows().forEach(w => {
+                w.webContents.send('socket:error', err.message);
+            });
+            socket = null;
+        });
     }
 })
 
