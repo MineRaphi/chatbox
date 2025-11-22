@@ -21,7 +21,6 @@ if (window.electronSocket) {
     });
 
     document.getElementById("connectBtn").addEventListener("click", function() {
-        console.log("BUTTON CLICKED");
         const ip = document.getElementById("ip").value;
         const port = document.getElementById("port").value;
         window.electronSocket.tryServerConnect(ip, port);
