@@ -25,11 +25,11 @@
 
 
       <!-- drag & drop mp4 & picture-->
-      <div id="dropZone" class="border-2 border-dashed border-white/20 rounded-md p-8 text-center hover:border-white/40 transition">
+      <div id="dropZone" class="border-2 border-dashed border-white/20 rounded-md p-8 text-center hover:border-white/40 transition cursor-pointer" role="button" tabindex="0" aria-label="Select files or drop here">
         <img src="../img/upload.png" alt="Upload icon" class="mx-auto w-14 h-14 mb-3">
         <p class="font-semibold">Drag & Drop images or mp 4 file here</p>
         <p class="text-xs text-white/70 mt-3">or</p>
-        <button id="selectBtn" class="mt-3 px-4 py-2 bg-primary rounded-md cursor-pointer">Select File</button>
+        <p  class="mt-3 px-4 py-2">Select File</p>
         <input id="fileInput" type="file" accept="image/*,video/mp4" class="hidden" multiple aria-label="Media input">
       </div>
 
@@ -45,7 +45,6 @@
 
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
-    const selectBtn = document.getElementById('selectBtn');
     const previewArea = document.getElementById('previewArea');
     const clearBtn = document.getElementById('clearBtn');
 
@@ -55,7 +54,7 @@
     function isImage(file) {
       if (!file) return false;
       if (file.type && file.type.startsWith('image/')) {
-        // explicitly exclude GIFs
+
         return !file.type.includes('gif');
       }
       return /\.(jpe?g|png|webp|bmp|svg)$/i.test(file.name);
@@ -63,7 +62,7 @@
 
     function isVideo(file) {
       if (!file) return false;
-      // allow only mp4 (user requested MP4 support)
+  
       if (file.type && file.type === 'video/mp4') return true;
       return /\.mp4$/i.test(file.name);
     }
@@ -131,8 +130,14 @@
       });
     }
 
-    // File selection
-    selectBtn.addEventListener('click', () => fileInput.click());
+    // File selection — clicking anywhere in the drop zone opens the file picker
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
     fileInput.addEventListener('change', (e) => {
       const pickedAll = Array.from(e.target.files || []);
       const accepted = [];
