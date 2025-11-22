@@ -20,11 +20,85 @@
   </script>
 
 </head>
-  <body>
-    <div class="titlebar self-start"></div>
-    <div class="flex items-center justify-center min-h-screen bg-cover bg-center bg-gradient-to-br from-neutral-800 to-purple-500">
-        <p>main</p>
-    </div>
-    <script type="module" src="../scripts.js"></script>
+  <body class="min-h-screen bg-gradient-to-br from-neutral-800 to-purple-500">
+      <!-- Sidebar-->
+      <div class="fixed left-4 top-4 bottom-4 w-20 border-2 border-white/20 bg-black/20 backdrop-blur-lg flex flex-col items-center py-4 space-y-4 rounded-3xl shadow-xl">
+          <!-- Buttons -->
+          <button id="profileBtn" class="a p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
+              <img class="w-8 h-8" src="../img/profileborder (2).png">
+          </button>
+
+          <button id="settingsBtn" class="a p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
+              <img class="w-8 h-8" src="../img/settings.png">
+          </button>
+
+          <button id="chatBtn" class="a p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
+              <img class="w-8 h-8" src="../img/chat2.png">
+          </button>
+          
+            <button id="uploadBtn" class="a p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer mt-auto" onclick="location.href='upload.html'">
+              <img class="w-8 h-8" src="../img/upload.png" alt="Upload">
+            </button>
+      </div>
+
+      <!--bottom bar -->
+      <div class="fixed bottom-4 left-28 right-4
+                  border-2 border-white/20 bg-black/20 backdrop-blur-lg
+                  flex flex-row justify-around items-center py-4
+                  rounded-3xl shadow-xl space-x-4">
+      </div>
+
+      <!-- Main content -->
+      <div id="mainContent" class="p-6">
+      </div>
+
+      <!--Settings Panel-->
+  <div id="settingsPanel" class="fixed top-5 left-30 text-white w-96 h-120 border-white/20 bg-black/20 border-2 backdrop-blur-lg  rounded-xl shadow-xl p-6 hidden">
+    <h2 class="text-xl font-bold mb-4">Settings</h2>
+    <p></p>
+    <button id="closeSettings" class="mt-4 px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition"> <img src=""> </button>
+  </div>
+    <script>
+      const settingsBtn = document.getElementById('settingsBtn');
+      const settingsPanel = document.getElementById('settingsPanel');
+      const closeSettings = document.getElementById('closeSettings');
+
+      const profilePanel2 = document.getElementById('profilePanel'); 
+
+      settingsBtn.addEventListener('click', () => {
+        settingsPanel.classList.toggle('hidden');
+        profilePanel.classList.add('hidden');   
+      });
+
+      closeSettings.addEventListener('click', () => {
+        settingsPanel.classList.add('hidden');
+      });
+    </script>
+
+          <!--Profile Panel-->
+  <div id="profilePanel" class="fixed top-5 left-30 text-white w-96 h-120 border-white/20 bg-black/20 border-2 backdrop-blur-lg  rounded-xl shadow-xl p-6 hidden">
+    <h2 class="text-xl font-bold mb-4">-Username-</h2>
+    <p></p>
+    <button id="closeProfile" class="mt-4 mr-4 object-top-left px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition"> <img src=""> </button>
+  </div>
+    <script>
+      const profileBtn = document.getElementById('profileBtn');
+      const profilePanel = document.getElementById('profilePanel');
+      const closeProfile = document.getElementById('closeProfile');
+
+      const settingsPanel2 = document.getElementById('settingsPanel'); 
+     
+      profileBtn.addEventListener('click', () => {
+        profilePanel.classList.toggle('hidden');
+        settingsPanel.classList.add('hidden');  
+      });
+
+      closeProfile.addEventListener('click', () => {
+        profilePanel.classList.add('hidden');
+      });
+    </script>
+
+
+    <script type="module" src="scripts.js"></script>
   </body>
 </html>
