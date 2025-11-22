@@ -4,6 +4,21 @@ console.log('Renderer: setting up socket IPC listeners')
 if (window.electronSocket) {
     window.electronSocket.onConnect((id) => {
         console.log('Connected to server via main process with id:', id)
+        // If an error display was scheduled, cancel it and hide any visible error
+        try {
+            if (window.__pendingErrorTimeout) {
+                clearTimeout(window.__pendingErrorTimeout);
+                window.__pendingErrorTimeout = null;
+            }
+            const el = document.getElementById("errorText");
+            if (el) {
+                el.classList.add('hidden');
+                el.textContent = '';
+            }
+        } catch (e) {
+            console.warn('Error clearing pending error:', e);
+        }
+
         window.location.href = "login.html";
     })
 
