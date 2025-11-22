@@ -42,7 +42,8 @@
                       class="cursor-pointer w-56 py-2 rounded-md bg-purple-500 hover:bg-purple-600 font-bold transition">
                 Connect to Server
               </button>
-              <text id="errorText"></text>
+
+              <div id="errorText" class="text-red-400 text-sm mt-3 hidden w-56 text-center mx-auto" role="alert" aria-live="polite"></div>
 
               <div id="error" class="text-red-400 text-sm"></div>
             </div>
@@ -50,6 +51,38 @@
         <div class="absolute w-56 h-48 bg-white blur-[50px] -left-1/2 -top-1/2"></div>
       </div>
     </div>
+    <script>
+
+      const connectBtn = document.getElementById('connectBtn');
+      const errorText = document.getElementById('errorText');
+      let errorTimeout = null;
+
+      function showError(message) {
+        if (!errorText) return;
+
+        errorText.textContent = message;
+        errorText.classList.remove('hidden');
+
+
+        if (errorTimeout) {
+          clearTimeout(errorTimeout);
+        }
+
+ 
+        errorTimeout = setTimeout(() => {
+          errorText.classList.add('hidden');
+          errorText.textContent = '';
+          errorTimeout = null;
+        }, 5000);
+      }
+
+
+      if (connectBtn) {
+        connectBtn.addEventListener('click', (e) => {
+          showError("Couldn't connect to MineRaphi Apple Ecosystem, please try again.");
+        });
+      }
+    </script>
     <script type="module" src="../scripts.js"></script>
   </body>
 </html>
