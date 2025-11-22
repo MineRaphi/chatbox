@@ -1,17 +1,34 @@
-import { io } from "https://cdn.socket.io/4.7.1/socket.io.esm.min.js";
+// This renderer script now communicates with the main process for socket events.
+console.log('Renderer: setting up socket IPC listeners')
 
-console.log("Attempting to connect to server...");
+if (window.electronSocket) {
+    window.electronSocket.onConnect((id) => {
+        console.log('Connected to server via main process with id:', id)
+        window.location.href = "login.html";
+    })
 
-const socket = io("http://localhost:3000" );
+    window.electronSocket.onHeartbeat((data) => {
+        console.log('heartbeat', data)
+    })
 
-socket.on("connect", () => {
-    console.log("Connected to server with id:", socket.id);
-});
+    window.electronSocket.onDisconnect((reason) => {
+        console.log('socket disconnected:', reason)
+    })
 
-socket.on("heartbeat", (data) => {
-    console.log(data);
-});
+    window.electronSocket.onError((error) => {
+        console.error('Socket connection error:', error);
+        document.getElementById("errorText").style.display = "block";
+    });
 
+    document.getElementById("connectBtn").addEventListener("click", function() {
+        console.log("BUTTON CLICKED");
+        const ip = document.getElementById("ip").value;
+        const port = document.getElementById("port").value;
+        window.electronSocket.tryServerConnect(ip, port);
+    });
+} else {
+    console.warn('electronSocket API not available. Are you running inside Electron with the preload script?')
+}
 document.addEventListener("DOMContentLoaded", () => {
     let emotesCache = [];
 
