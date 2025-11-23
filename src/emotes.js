@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // ---------- 1Emote cache ----------
+    // ---------- Emote cache ----------
     let emotesCache = [];
     let filteredEmotes = [];
 
-    // --------- emotefetching ----------
+    // --------- Emote Fetching ----------
     async function fetchEmotes() {
         try {
             // Global
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 let autocompleteJustSelected = false;
 
-// In your suggestion box keydown handler:
+//arrowkeys
 chatInput.addEventListener("keydown", (e) => {
     if (suggestionBox.style.display === "block" && suggestionItems.length > 0) {
         if (e.key === "ArrowDown") {
@@ -68,7 +68,7 @@ chatInput.addEventListener("keydown", (e) => {
             if (selectedSuggestion >= 0 && suggestionItems[selectedSuggestion]) {
                 suggestionItems[selectedSuggestion].click();
                 e.preventDefault();
-                autocompleteJustSelected = true; // Set flag!
+                autocompleteJustSelected = true;
             }
         } else if (e.key === "Escape") {
             suggestionBox.style.display = "none";
@@ -78,12 +78,12 @@ chatInput.addEventListener("keydown", (e) => {
     }
 });
 
-// In your chat send handler:
+//arrowkeys
 chatInput.addEventListener("keydown", e => {
     if (e.key === "Enter") {
         if (autocompleteJustSelected) {
-            autocompleteJustSelected = false; // Reset flag
-            return; // Don't send message!
+            autocompleteJustSelected = false;
+            return; 
         }
         e.preventDefault();
 
@@ -93,7 +93,7 @@ chatInput.addEventListener("keydown", e => {
         const words = text.split(/\s+/);
 
         words.forEach(word => {
-            // CASE SENSITIVE MATCH
+            
             const emote = emotesCache.find(e => e.name === word);
 
             if (emote) {
@@ -155,14 +155,13 @@ chatInput.addEventListener("keydown", e => {
         return;
     }
 
-    // Update position every time the box is shown
+    // Update position
     const rect = chatInput.getBoundingClientRect();
     suggestionBox.style.left = rect.left + window.scrollX + "px";
     suggestionBox.style.display = "block";
     suggestionBox.style.maxHeight = "200px";
     suggestionBox.style.minWidth = rect.width + "px";
 
-    // After filling the box with items:
     setTimeout(() => {
         const actualHeight = suggestionBox.offsetHeight;
         suggestionBox.style.top = (rect.top + window.scrollY - actualHeight) + "px";
@@ -235,7 +234,7 @@ function renderEmotePanel() {
         img.className = "max-h-10 w-auto cursor-pointer hover:scale-110 transition";
 
         img.addEventListener("click", () => {
-
+            
         });
 
         grid.appendChild(img);
