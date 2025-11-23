@@ -1,6 +1,10 @@
 // This renderer script now communicates with the main process for socket events.
 console.log('Renderer: setting up socket IPC listeners')
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 if (window.electronSocket) {
     window.electronSocket.onConnect((id) => {
         console.log('Connected to server via main process with id:', id)
@@ -15,27 +19,36 @@ if (window.electronSocket) {
         console.log('socket disconnected:', reason)
     })
 
-    window.electronSocket.onError((error) => {
+    window.electronSocket.onError(async (error) => {
         console.error('Socket connection error:', error);
         document.getElementById("errorText").style.display = "block";
+        await sleep(5000);
+        document.getElementById("errorText").style.display = "none";
     });
 
-    window.electronSocket.onRegisterSuccess(() => {
-        alert("Registration successful! You can now log in.");
-        window.location.href = "login.html";
+    window.electronSocket.onRegisterSuccess(async () => {
+        console.log("Registration successful! You can now log in.");
+        document.getElementById("RegSuccess").style.display = "block";
     });
 
-    window.electronSocket.onRegisterFailure((message) => {
-        alert("Registration failed: " + message);
+    window.electronSocket.onRegisterFailure(async (message) => {
+        console.log("Registration failed: " + message);
+        document.getElementById("RegError").innerText = message;
+        document.getElementById("RegError").style.display = "block";
+        await sleep(5000);
+        document.getElementById("RegError").style.display = "none";
     });
 
     window.electronSocket.onLoginSuccess(() => {
-        alert("Login successful! Welcome.");
+        console.log("Login successful! Welcome.");
         window.location.href = "main.html";
     });
 
-    window.electronSocket.onLoginFailure((message) => {
-        alert("Login failed: " + message);
+    window.electronSocket.onLoginFailure(async (message) => {
+        console.log("Login failed: " + message);
+        document.getElementById("LoginError").style.display = "block";
+        await sleep(5000);
+        document.getElementById("LoginError").style.display = "none";
     });
 
     const connectBtn = document.getElementById("connectBtn");
@@ -49,17 +62,23 @@ if (window.electronSocket) {
 
     const registerBtn = document.getElementById("registerBtn");
     if (registerBtn) {
-        document.getElementById("registerBtn").addEventListener("click", function() {
+        document.getElementById("registerBtn").addEventListener("click", async function() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
             const passwordConfirm = document.getElementById("confirmPassword").value;
             console.log("Registering user:", username);
             if (password !== passwordConfirm) {
-                alert("Passwords do not match!");
+                document.getElementById("RegError").innerText = "Passwords do not match!";
+                document.getElementById("RegError").style.display = "block";
+                await sleep(5000);
+                document.getElementById("RegError").style.display = "none";
                 return;
             }
             if (password === "" || username === "") {
-                alert("Username and password cannot be empty!");
+                document.getElementById("RegError").innerText = "Username and password cannot be empty!";
+                document.getElementById("RegError").style.display = "block";
+                await sleep(5000);
+                document.getElementById("RegError").style.display = "none";
                 return;
             }
             window.electronSocket.register(username, password);
