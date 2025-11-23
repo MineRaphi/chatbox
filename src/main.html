@@ -55,17 +55,14 @@
       <!-- Main content -->
       <div id="mainContent" class="p-6">
                 <!-- Chat Panel -->
-        <div id="chatPanel" class="hide-scrollbar fixed bottom-30 mt-5 ml-70 left-28 right-4 h-110 border-2 border-white/20 bg-black/20 backdrop-blur-lg rounded-xl shadow-xl p-4 flex flex-col">
+        <div id="chatPanel" class="hidden hide-scrollbar fixed bottom-30 mt-5 ml-70 left-28 right-4 h-110 border-2 border-white/20 bg-black/20 backdrop-blur-lg rounded-xl shadow-xl p-4 flex flex-col">
             <div id="chatMessages" class="hide-scrollbar flex-1 overflow-y-auto mb-2"></div>
             <input id="chatInput" type="text" placeholder="write something" 
                   class="text-white caret-white placeholder-white/50 rounded-lg w-full p-2 rounded border-white/20 bg-black/20 backdrop-blur-lg focus:outline-none"/>
         </div>
 
                 <!-- Emote Panel -->
-          <div id="emotePanel"
-              class="hide-scrollbar fixed bottom-30 mt-5 ml-70 left-28 right-4 h-110 border-2 border-white/20 bg-black/20
-                      backdrop-blur-lg rounded-xl shadow-xl p-4 flex flex-col">
-
+          <div id="emotePanel" class="hidden hide-scrollbar fixed bottom-30 mt-5 ml-70 left-28 right-4 h-110 border-2 border-white/20 bg-black/20 backdrop-blur-lg rounded-xl shadow-xl p-4 flex flex-col">
               <input id="emoteSearch"
                     type="text"
                     placeholder="search emotes"
