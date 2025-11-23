@@ -235,8 +235,7 @@ function renderEmotePanel() {
         img.className = "max-h-10 w-auto cursor-pointer hover:scale-110 transition";
 
         img.addEventListener("click", () => {
-            chatInput.value += emote.name + " ";
-            chatInput.focus();
+
         });
 
         grid.appendChild(img);
