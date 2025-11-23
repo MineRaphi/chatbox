@@ -120,9 +120,19 @@ button svg {
   box-shadow: 0 6px 18px rgba(239,68,68,0.08);
 }
 
-.emote {
-    height: 2rem;            /* controls size */
-    width: auto !important;  /* keeps original width */
-    vertical-align: middle;
-    margin-right: 0.25rem;
+.hide-scrollbar {
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE and Edge */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;                /* Chrome, Safari, Opera */
+}
+
+#emoteGrid {
+    -ms-overflow-style: none;   /* IE & Edge */
+    scrollbar-width: none;      /* Firefox */
+}
+
+#emoteGrid::-webkit-scrollbar {
+    display: none;              /* Chrome, Safari, Opera */
 }
