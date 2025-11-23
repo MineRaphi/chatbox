@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // ---------- 1️⃣ Emote cache ----------
+    // ---------- 1Emote cache ----------
     let emotesCache = [];
+    let filteredEmotes = [];
 
     // --------- emotefetching ----------
     async function fetchEmotes() {
@@ -37,7 +38,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    fetchEmotes();
+    fetchEmotes().then(() => {
+        filteredEmotes = emotesCache; // default: show all
+        renderEmotePanel();
+    });
 
 
     const chatInput = document.getElementById("chatInput");
@@ -115,14 +119,16 @@ chatInput.addEventListener("keydown", e => {
     // emote suggestion box
 
     let suggestionBox = document.createElement("div");
-    suggestionBox.style.position = "absolute";
-    suggestionBox.style.left = chatInput.offsetLeft + "px";
-    suggestionBox.style.top = (chatInput.offsetTop - 120) + "px"; // adjust as needed
-    suggestionBox.style.minWidth = "180px";      // Set a fixed minimum width
-    suggestionBox.style.maxWidth = "220px";      // Set a fixed maximum width
-    suggestionBox.style.width = "220px";         // Optional: force a fixed width
-    suggestionBox.style.fontSize = "0.95rem";    // Optional: slightly smaller text
-    suggestionBox.style.background = "rgba(30,30,40,0.98)";
+    const rect = chatInput.getBoundingClientRect();
+    const boxHeight = 200;
+    suggestionBox.style.left = rect.left + window.scrollX + "px";
+    suggestionBox.style.top = (rect.top + window.scrollY - boxHeight) + "px";
+    suggestionBox.style.minWidth = rect.width + "px";
+    suggestionBox.style.position = "absolute";   
+    suggestionBox.style.maxWidth = "220px";      
+    suggestionBox.style.width = "220px";       
+    suggestionBox.style.fontSize = "0.95rem";    
+    suggestionBox.style.background = "rgba(30,30,40,0.8)";
     suggestionBox.style.border = "1px solid #888";
     suggestionBox.style.borderRadius = "0.5rem";
     suggestionBox.style.zIndex = "9999";
@@ -134,65 +140,76 @@ chatInput.addEventListener("keydown", e => {
     suggestionBox.style.display = "none";
     suggestionBox.style.overflowX = "hidden";
     suggestionBox.style.overflowY = "hidden";
-    document.body.appendChild(suggestionBox);
-    
-    document.body.appendChild(suggestionBox);
+    document.body.appendChild(suggestionBox); 
 
     let suggestionItems = [];
     let selectedSuggestion = -1;
 
     function updateSuggestionBox() {
-        const value = chatInput.value;
-        const match = value.match(/:(\w*)$/);
-        if (!match) {
-            suggestionBox.style.display = "none";
-            suggestionItems = [];
-            selectedSuggestion = -1;
-            return;
-        }
-
-        const typed = match[1].toLowerCase();
-        const results = emotesCache.filter(e =>
-            e.name.toLowerCase().startsWith(typed)
-        );
-
-        if (results.length === 0) {
-            suggestionBox.style.display = "none";
-            suggestionItems = [];
-            selectedSuggestion = -1;
-            return;
-        }
-
-        suggestionBox.innerHTML = "";
-        suggestionBox.style.display = "block";
+    const value = chatInput.value;
+    const match = value.match(/:(\w*)$/);
+    if (!match) {
+        suggestionBox.style.display = "none";
         suggestionItems = [];
-
-        results.forEach((emote, idx) => {
-            const item = document.createElement("div");
-            item.style.padding = "4px";
-            item.style.cursor = "pointer";
-            item.style.display = "flex";
-            item.style.alignItems = "center";
-            item.innerHTML = `
-                <img src="${emote.url}" style="height:24px;margin-right:6px;">
-                <span style="color:white;">${emote.name}</span>
-            `;
-            item.onmouseenter = () => {
-                setSelectedSuggestion(idx);
-            };
-            item.onclick = () => {
-                chatInput.value = value.replace(/:(\w*)$/, emote.name + " ");
-                suggestionBox.style.display = "none";
-                suggestionItems = [];
-                selectedSuggestion = -1;
-                chatInput.focus();
-            };
-            suggestionBox.appendChild(item);
-            suggestionItems.push(item);
-        });
-
-        setSelectedSuggestion(0); 
+        selectedSuggestion = -1;
+        return;
     }
+
+    // Update position every time the box is shown
+    const rect = chatInput.getBoundingClientRect();
+    suggestionBox.style.left = rect.left + window.scrollX + "px";
+    suggestionBox.style.display = "block";
+    suggestionBox.style.maxHeight = "200px";
+    suggestionBox.style.minWidth = rect.width + "px";
+
+    // After filling the box with items:
+    setTimeout(() => {
+        const actualHeight = suggestionBox.offsetHeight;
+        suggestionBox.style.top = (rect.top + window.scrollY - actualHeight) + "px";
+    }, 0);
+
+    const typed = match[1].toLowerCase();
+    const results = emotesCache.filter(e =>
+        e.name.toLowerCase().startsWith(typed)
+    );
+
+    if (results.length === 0) {
+        suggestionBox.style.display = "none";
+        suggestionItems = [];
+        selectedSuggestion = -1;
+        return;
+    }
+
+    suggestionBox.innerHTML = "";
+    suggestionBox.style.display = "block";
+    suggestionItems = [];
+
+    results.forEach((emote, idx) => {
+        const item = document.createElement("div");
+        item.style.padding = "4px";
+        item.style.cursor = "pointer";
+        item.style.display = "flex";
+        item.style.alignItems = "center";
+        item.innerHTML = `
+            <img src="${emote.url}" style="height:24px;margin-right:6px;">
+            <span style="color:white;">${emote.name}</span>
+        `;
+        item.onmouseenter = () => {
+            setSelectedSuggestion(idx);
+        };
+        item.onclick = () => {
+            chatInput.value = value.replace(/:(\w*)$/, emote.name + " ");
+            suggestionBox.style.display = "none";
+            suggestionItems = [];
+            selectedSuggestion = -1;
+            chatInput.focus();
+        };
+        suggestionBox.appendChild(item);
+        suggestionItems.push(item);
+    });
+
+    setSelectedSuggestion(0); 
+}
 
     function setSelectedSuggestion(idx) {
         suggestionItems.forEach((item, i) => {
@@ -203,4 +220,43 @@ chatInput.addEventListener("keydown", e => {
 
     chatInput.addEventListener("input", updateSuggestionBox);
 
+function renderEmotePanel() {
+    const grid = document.getElementById("emoteGrid");
+    if (!grid) return;
+
+    grid.innerHTML = "";
+
+    filteredEmotes.forEach(emote => {
+        const img = document.createElement("img");
+        img.src = emote.url;
+        img.title = emote.name;
+
+        // fixed
+        img.className = "max-h-10 w-auto cursor-pointer hover:scale-110 transition";
+
+        img.addEventListener("click", () => {
+            chatInput.value += emote.name + " ";
+            chatInput.focus();
+        });
+
+        grid.appendChild(img);
+    });
+}
+
+
+        const emoteSearch = document.getElementById("emoteSearch");
+
+        emoteSearch.addEventListener("input", () => {
+            const text = emoteSearch.value.toLowerCase();
+
+            filteredEmotes = emotesCache.filter(e =>
+                e.name.toLowerCase().includes(text)
+            );
+
+            renderEmotePanel();
+        });
+
+
 });
+
+
