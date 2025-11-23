@@ -130,7 +130,8 @@
       });
     }
 
-    // File selection — clicking anywhere in the drop zone opens the file picker
+    // File selection
+    selectBtn.addEventListener('click', () => fileInput.click());
     dropZone.addEventListener('click', () => fileInput.click());
     dropZone.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -147,7 +148,7 @@
         else rejected.push(f);
       });
       if (rejected.length) {
-        showWarning(`${rejected.length} file(s) were rejected (only images or MP4 under 5 MB allowed)`);
+        showWarning(`${rejected.length} file were rejected (only images or MP4 under 5 MB allowed)`);
       }
       files = files.concat(accepted);
       renderPreview();
