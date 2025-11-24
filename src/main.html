@@ -20,29 +20,30 @@
   </script>
 
 </head>
-  <body class="min-h-screen bg-gradient-to-br from-neutral-800 to-purple-500">
+  <body class="min-h-screen bg-gradient-to-br from-[var(--bg1)] to-[var(--bg2)]">
       <!-- Sidebar-->
       <div class="fixed left-4 top-4 bottom-4 w-20 border-2 border-white/20 bg-black/20 backdrop-blur-lg flex flex-col items-center py-4 space-y-4 rounded-3xl shadow-xl">
           <!-- Buttons -->
-          <button id="profileBtn" class=" p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
-              <img class="w-8 h-8" src="../img/profileborder (2).png">
+          <button id="profileBtn" class=" p-1 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
+              <img class="w-8 h-8" src="../img/profileborder (2).png" style="width:48px; height:48px;">
           </button>
 
-          <button id="chatBtn" class=" p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
-              <img class="w-8 h-8" src="../img/chat2.png">
+          <button id="chatBtn" class="p-1 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
+              <img class="w-8 h-8" src="../img/chat2.png" style="width:48px; height:48px;">
           </button>
 
           <button id="emoteBtn" class=" p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
-              <img class="w-8 h-8" src="../img/box.png">
+              <img class="w-8 h-8 " src="../img/box.png">
+          </button>
+          
+          <button id="uploadBtn" class="p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer " onclick="location.href='upload.html'">
+             <img class="w-8 h-8" src="../img/upload.png" alt="Upload">
           </button>
 
           <button id="settingsBtn" class=" p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer">
               <img class="w-8 h-8" src="../img/settings.png">
           </button>
-          
-          <button id="uploadBtn" class="p-3 rounded-2xl hover:bg-neutral-600 transition cursor-pointer mt-auto" onclick="location.href='upload.html'">
-             <img class="w-8 h-8" src="../img/upload.png" alt="Upload">
-          </button>
+
       </div>
 
       <!--Bottom bar -->
@@ -87,8 +88,9 @@
       <!--Settings Panel-->
   <div id="settingsPanel" class="fixed top-5 left-28 text-white w-65 h-110 mt-5 border-white/20 bg-black/20 border-2 backdrop-blur-lg  rounded-xl shadow-xl p-6 hidden">
     <h2 class="text-xl font-bold mb-4">Settings</h2>
-    <p></p>
-    <button id="closeSettings" class="mt-4 px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition"> <img src=""> </button>
+    <button id="purpleBtn"> Purple Theme </button>
+    <button id="redBtn"> Red Theme </button>
+    <button id="closeSettings" class="mt-4 px-3 py-1 bg-gray-300 rounded hover:bg-gray-400 transition"> <img src=""> Close Settings </button>
   </div>
 
         <!--Chat + Emote Panel Script-->
@@ -158,6 +160,7 @@
 
 
     <script type="module" src="../scripts.js"></script>
+    <script type="module" src="themes.js"></script>
     <script type="module" src="emotes.js"></script>
   </body>
 </html>
