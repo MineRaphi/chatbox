@@ -1,3 +1,5 @@
+import { send7tvEmote, sendMessage } from "../scripts.js";
+
 document.addEventListener("DOMContentLoaded", () => {
 
     // ---------- 1Emote cache ----------
@@ -87,32 +89,7 @@ chatInput.addEventListener("keydown", e => {
         }
         e.preventDefault();
 
-        const text = chatInput.value.trim();
-        if (!text) return;
-
-        const words = text.split(/\s+/);
-
-        words.forEach(word => {
-            // CASE SENSITIVE MATCH
-            const emote = emotesCache.find(e => e.name === word);
-
-            if (emote) {
-                const img = document.createElement("img");
-                img.src = emote.url;
-                img.className = "inline-block h-8 align-middle mr-1 emote";
-                img.style.marginBottom = "0.25rem";
-                chatMessages.appendChild(img);
-            } else {
-                const span = document.createElement("span");
-                span.textContent = word + " ";
-                span.className = "text-white";
-                chatMessages.appendChild(span);
-            }
-        });
-
-        chatMessages.appendChild(document.createElement("br"));
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        chatInput.value = "";
+        sendMessage(chatInput.value);
     }
 });
 
@@ -235,7 +212,7 @@ function renderEmotePanel() {
         img.className = "max-h-10 w-auto cursor-pointer hover:scale-110 transition";
 
         img.addEventListener("click", () => {
-
+            send7tvEmote(emote.name);
         });
 
         grid.appendChild(img);

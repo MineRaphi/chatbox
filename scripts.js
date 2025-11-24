@@ -110,7 +110,57 @@ if (window.electronSocket) {
         });
     }
 
+    window.electronSocket.recieveChatMessage((data) => {
+        console.log("Received data message:", data);
+        convertTextToChatMessage(data.user + ": " + data.message);
+    });
 }
 else {
     console.warn('electronSocket API not available. Are you running inside Electron with the preload script?')
+}
+
+export function send7tvEmote(emoteCode) {
+    console.log("Sending 7TV emote:", emoteCode);
+    console.log("Function still needs to be implemented."); // Placeholder for actual implementation
+}
+
+const chatInput = document.getElementById("chatInput");
+const chatMessages = document.getElementById("chatMessages");
+function convertTextToChatMessage(text) {
+    console.log("Converting text to chat message:", text);
+    const textValue = text.trim();
+    if (!textValue) return;
+
+    const words = textValue.split(/\s+/);
+
+    let emotesCache = [];
+
+    words.forEach(word => {
+        // CASE SENSITIVE MATCH
+        const emote = emotesCache.find(e => e.name === word);
+
+        if (emote) {
+            const img = document.createElement("img");
+            img.src = emote.url;
+            img.className = "inline-block h-8 align-middle mr-1 emote";
+            img.style.marginBottom = "0.25rem";
+            chatMessages.appendChild(img);
+        } else {
+            const span = document.createElement("span");
+            span.textContent = word + " ";
+            span.className = "text-white";
+            chatMessages.appendChild(span);
+        }
+    });
+    chatMessages.appendChild(document.createElement("br"));
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    chatInput.value = "";
+}
+
+export function sendMessage(message) {
+    if (window.electronSocket) {
+        console.log("Sending message:", message);
+        window.electronSocket.sendChatMessage(message);
+        convertTextToChatMessage(message);
+    }
 }
