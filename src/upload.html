@@ -55,7 +55,6 @@
     function isImage(file) {
       if (!file) return false;
       if (file.type && file.type.startsWith('image/')) {
-        // explicitly exclude GIFs
         return !file.type.includes('gif');
       }
       return /\.(jpe?g|png|webp|bmp|svg)$/i.test(file.name);
@@ -63,7 +62,7 @@
 
     function isVideo(file) {
       if (!file) return false;
-      // allow only mp4 (user requested MP4 support)
+
       if (file.type && file.type === 'video/mp4') return true;
       return /\.mp4$/i.test(file.name);
     }
