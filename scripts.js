@@ -1,6 +1,10 @@
 // This renderer script now communicates with the main process for socket events.
 console.log('Renderer: setting up socket IPC listeners')
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 if (window.electronSocket) {
     window.electronSocket.onConnect((id) => {
         console.log('Connected to server via main process with id:', id)
@@ -30,17 +34,83 @@ if (window.electronSocket) {
         console.log('socket disconnected:', reason)
     })
 
-    window.electronSocket.onError((error) => {
+    window.electronSocket.onError(async (error) => {
         console.error('Socket connection error:', error);
         document.getElementById("errorText").style.display = "block";
+        await sleep(5000);
+        document.getElementById("errorText").style.display = "none";
     });
 
-    document.getElementById("connectBtn").addEventListener("click", function() {
-        console.log("BUTTON CLICKED");
+    window.electronSocket.onRegisterSuccess(async () => {
+        console.log("Registration successful! You can now log in.");
+        document.getElementById("RegSuccess").style.display = "block";
+    });
+
+    window.electronSocket.onRegisterFailure(async (message) => {
+        console.log("Registration failed: " + message);
+        document.getElementById("RegError").innerText = message;
+        document.getElementById("RegError").style.display = "block";
+        await sleep(5000);
+        document.getElementById("RegError").style.display = "none";
+    });
+
+    window.electronSocket.onLoginSuccess(() => {
+        console.log("Login successful! Welcome.");
+        window.location.href = "main.html";
+    });
+
+    window.electronSocket.onLoginFailure(async (message) => {
+        console.log("Login failed: " + message);
+        document.getElementById("LoginError").style.display = "block";
+        await sleep(5000);
+        document.getElementById("LoginError").style.display = "none";
+    });
+
+    const connectBtn = document.getElementById("connectBtn");
+    if (connectBtn) {
+        connectBtn.addEventListener("click", function() {
         const ip = document.getElementById("ip").value;
         const port = document.getElementById("port").value;
         window.electronSocket.tryServerConnect(ip, port);
     });
-} else {
+}
+
+    const registerBtn = document.getElementById("registerBtn");
+    if (registerBtn) {
+        document.getElementById("registerBtn").addEventListener("click", async function() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const passwordConfirm = document.getElementById("confirmPassword").value;
+            console.log("Registering user:", username);
+            if (password !== passwordConfirm) {
+                document.getElementById("RegError").innerText = "Passwords do not match!";
+                document.getElementById("RegError").style.display = "block";
+                await sleep(5000);
+                document.getElementById("RegError").style.display = "none";
+                return;
+            }
+            if (password === "" || username === "") {
+                document.getElementById("RegError").innerText = "Username and password cannot be empty!";
+                document.getElementById("RegError").style.display = "block";
+                await sleep(5000);
+                document.getElementById("RegError").style.display = "none";
+                return;
+            }
+            window.electronSocket.register(username, password);
+        });
+    }
+
+    const loginBtn = document.getElementById("loginBtn");
+    if (loginBtn) {
+        loginBtn.addEventListener("click", function() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            console.log("Logging in user:", username);
+            window.electronSocket.login(username, password);
+        });
+    }
+
+}
+else {
     console.warn('electronSocket API not available. Are you running inside Electron with the preload script?')
 }

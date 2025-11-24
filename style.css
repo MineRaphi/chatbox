@@ -128,11 +128,26 @@ button svg {
   display: none;                /* Chrome, Safari, Opera */
 }
 
-#emoteGrid {
-    -ms-overflow-style: none;   /* IE & Edge */
-    scrollbar-width: none;      /* Firefox */
-}
 
 #emoteGrid::-webkit-scrollbar {
-    display: none;              /* Chrome, Safari, Opera */
+    width: 8px;
+}
+
+#emoteGrid::-webkit-scrollbar-track {
+    background: rgba(80, 0, 120, 0.2); 
+    border-radius: 10px;
+}
+
+#emoteGrid::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #a855f7, #7e22ce);
+    border-radius: 10px;
+}
+
+#emoteGrid::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #c084fc, #9333ea);
+}
+
+#emoteGrid {
+    scrollbar-width: thin;
+    scrollbar-color: #a855f7 rgba(80, 0, 120, 0.2);
 }
