@@ -14,5 +14,8 @@ contextBridge.exposeInMainWorld('electronSocket', {
     emit: (eventName, payload) => ipcRenderer.send('socket:emit', { eventName, payload }),
     tryServerConnect: (ip, port) => ipcRenderer.send('server:select', { ip, port}),
     register: (username, password) => ipcRenderer.send('user:register', { username, password}),
-    login: (username, password) => ipcRenderer.send('user:login', { username, password})
+    login: (username, password) => ipcRenderer.send('user:login', { username, password}),
 })
+
+
+

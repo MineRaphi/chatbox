@@ -10,7 +10,7 @@
     tailwind.config = { theme: { extend: { colors: { primary: '#1d4ed8' } } } }
   </script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-neutral-800 to-purple-500 text-white">
+<body class="min-h-screen bg-gradient-to-br from-[var(--bg1)] to-[var(--bg2)] text-white">
   <div class="max-w-3xl mx-auto p-6">
     <div class="max-w-3xl mx-auto p-6 mt-12">
     <header class="flex items-center justify-between mb-6">
@@ -193,5 +193,7 @@
         });
       });
   </script>
+  <script type="module" src="themes.js"></script>
+  <script type="module" src="../scripts.js"></script>
 </body>
 </html>

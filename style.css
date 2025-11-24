@@ -121,3 +121,77 @@ button svg {
     scrollbar-width: thin;
     scrollbar-color: #a855f7 rgba(80, 0, 120, 0.2);
 }
+
+/* THEMES */
+
+:root[data-theme="purple"] {
+  --bg1: ##262626;  
+  --bg2: #a855f7;  
+  --rbutton: #a855f7; 
+  --buttonhover: #9333ea;
+}
+
+:root[data-theme="red"] {
+  --bg1: #D7263D;  
+  --bg2: #02182B;
+  --rbutton: #D7263D; 
+  --buttonhover: #ad1025;
+}
+
+/* Purple theme */
+body.purple {
+  --bg1: #262626;
+  --bg2: #a855f7;
+  --rbutton: #a855f7;
+  --buttonhover: #9333ea;
+
+  /*big bomba button*/
+
+    --btn-border: #4f46e5;
+  --btn-bg-start: #312e81;
+  --btn-bg-mid: rgba(0, 0, 0, 0.6);
+  --btn-bg-end: rgba(0, 0, 0, 0.8);
+
+  --btn-shine: #c084fc;
+
+  --btn-glow-start: rgba(99, 102, 241, 0.1);
+  --btn-glow-mid: rgba(129, 140, 248, 0.2);
+
+  --icon-bg-start: rgba(99, 102, 241, 0.3);
+  --icon-bg-end: rgba(79, 70, 229, 0.1);
+
+  --icon-filter: drop-shadow(0 0 4px #a78bfa);
+
+  --text-title: #818cf8;
+  --text-sub: rgba(165, 180, 252, 0.6);
+
+  --arrow-color: #818cf8;
+}
+
+/* Red theme */
+body.red {
+  --bg1: #262626;
+  --bg2: #ef4444;
+  --rbutton: #ef4444;
+  --buttonhover: #b91c1c;
+
+  /*big bomba button*/
+  
+  --btn-bg-start: #8b1c1c; 
+  --btn-bg-mid: #a72a2a;    
+  --btn-bg-end: #d7263d;    
+
+  --btn-border: #b91c1c;
+  --btn-shine: #ef4444;
+  --btn-glow-start: rgba(239, 68, 68, 0.2);
+  --btn-glow-mid: rgba(239, 68, 68, 0.4);
+
+  --icon-bg-start: rgba(239, 68, 68, 0.3);
+  --icon-bg-end: rgba(239, 68, 68, 0.1);
+  --icon-filter: drop-shadow(0 0 4px #ef4444);
+
+  --text-title: #0c0c0c;
+  --text-sub: rgba(3, 1, 1, 0.7);
+
+  --arrow-color: #ef4444;
+}

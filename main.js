@@ -117,3 +117,6 @@ function setupSocketListeners() {
 app.whenReady().then(() => {
     createWindow()
 })
+
+/*create the external emote window*/
+
