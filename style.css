@@ -195,3 +195,50 @@ body.red {
 
   --arrow-color: #ef4444;
 }
+
+.transparentButton {
+    position:absolute;
+    background:transparent;
+    border:none;
+    background: rgba(0,0,0,0.0); /*change this to something else so it shows the btns*/
+    padding:0;
+    cursor: pointer;
+    display: block
+}
+
+
+#computerPanel {
+    position: absolute;
+    top: 335px;     
+    right: 210px;       
+    width: 0;
+    height: 0;
+    opacity: 0;
+    background: #cce7ff;
+    color: #000;
+    border: 5px solid #000000; 
+    border-radius: 0;        
+    overflow: hidden;
+    padding: 20px;
+    box-sizing: border-box;   
+    pointer-events: none;     
+    transition: 
+        width 0.2s ease,
+        height 0.2s ease,
+        top 0.2s ease,
+        left 0.2s ease,
+        opacity 0.2s ease;
+}
+
+#computerPanel.show {
+    width: 400px; 
+    height: 250px;  
+    opacity: 1;
+    top: 50%;       
+    left: 50%;      
+    transform: translate(-50%, -50%);
+    pointer-events: auto;    
+}
+
+
+
