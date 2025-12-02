@@ -80,7 +80,6 @@ chatInput.addEventListener("keydown", (e) => {
     }
 });
 
->>>>>>> simi
     // emote suggestion box
 
     let suggestionBox = document.createElement("div");
@@ -127,7 +126,6 @@ chatInput.addEventListener("keydown", (e) => {
     suggestionBox.style.maxHeight = "200px";
     suggestionBox.style.minWidth = rect.width + "px";
         // Update position every time the box is shown
-        const rect = chatInput.getBoundingClientRect();
         suggestionBox.style.left = rect.left + window.scrollX + "px";
         suggestionBox.style.display = "block";
         suggestionBox.style.maxHeight = "200px";
