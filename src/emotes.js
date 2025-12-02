@@ -80,19 +80,6 @@ chatInput.addEventListener("keydown", (e) => {
     }
 });
 
-// In your chat send handler:
-chatInput.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-        if (autocompleteJustSelected) {
-            autocompleteJustSelected = false; // Reset flag
-            return; // Don't send message!
-        }
-        e.preventDefault();
-
-        sendMessage(chatInput.value);
-    }
-});
-
     // emote suggestion box
 
     let suggestionBox = document.createElement("div");
@@ -220,17 +207,17 @@ function renderEmotePanel() {
 }
 
 
-        const emoteSearch = document.getElementById("emoteSearch");
+const emoteSearch = document.getElementById("emoteSearch");
 
-        emoteSearch.addEventListener("input", () => {
-            const text = emoteSearch.value.toLowerCase();
+emoteSearch.addEventListener("input", () => {
+    const text = emoteSearch.value.toLowerCase();
 
-            filteredEmotes = emotesCache.filter(e =>
-                e.name.toLowerCase().includes(text)
-            );
+    filteredEmotes = emotesCache.filter(e =>
+        e.name.toLowerCase().includes(text)
+    );
 
-            renderEmotePanel();
-        });
+    renderEmotePanel();
+});
 
 
 });
