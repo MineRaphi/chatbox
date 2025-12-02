@@ -234,6 +234,15 @@ body.red {
     pointer-events: auto;
 }
 
+.computerPage {
+    width: 100%;
+    height: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
 .pcButton {
   width: 20px;
   height: 20px; 
