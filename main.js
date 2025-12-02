@@ -14,6 +14,7 @@ const store = new Store()
 function createWindow() {
     const win = new BrowserWindow({
         ...(process.platform !== 'darwin' ? { titleBarOverlay: true } : {}),
+        title: 'chatbox',
         width: 800,
         height: 600,
         titleBarStyle: 'hidden',
