@@ -62,6 +62,12 @@ ipcMain.on('user:login', (event, { username, password }) => {
     }
 })
 
+ipcMain.on('chat:sendMessage', (event, message) => {
+    if (socket && socket.connected) {
+        socket.emit('chatMessage', message);
+    }
+})
+
 function setupSocketListeners() {
     socket.on('connect', () => {
         console.log('Socket connected (main):', socket.id)
@@ -110,6 +116,12 @@ function setupSocketListeners() {
     socket.on('login_failed', (message) => {
         BrowserWindow.getAllWindows().forEach(w => {
             w.webContents.send('user:loginFailure', message);
+        });
+    })
+
+    socket.on('chatMessage', (data) => {    
+        BrowserWindow.getAllWindows().forEach(w => {
+            w.webContents.send('chat:receiveMessage', data);
         });
     })
 }
