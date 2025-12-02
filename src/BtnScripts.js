@@ -50,13 +50,60 @@ computerBack.onclick = () => {
 
 
 // BOGOSORT
+// BOGOSORT
 import { visualBogoSort } from './bogoSort.js';
 
-const visualizer = document.getElementById('visualizer');
-const input = document.getElementById('numInput');
-const startBtn = document.getElementById('startBtn');
+const visualizerSort = document.getElementById('visualizer-sort');
+const numInputSort = document.getElementById('numInput-sort');
+const startBtnSort = document.getElementById('startBtn-sort');
+const stopBtnSort = document.getElementById('stopBtn-sort');
+const speedSliderSort = document.getElementById('speedSlider-sort');
+const speedLabelSort = document.getElementById('speedLabel-sort');
 
-startBtn.onclick = () => {
-  const arr = input.value.split(',').map(Number);
-  visualBogoSort(arr, visualizer);
-};
+let stopRequested = false;
+let running = false;
+
+// disable stop until a run starts
+if (stopBtnSort) stopBtnSort.disabled = true;
+
+// initialize speed label and live update
+if (speedSliderSort && speedLabelSort) {
+    speedLabelSort.textContent = `${speedSliderSort.value} ms`;
+    speedSliderSort.oninput = () => {
+        speedLabelSort.textContent = `${speedSliderSort.value} ms`;
+    };
+}
+
+if (startBtnSort) {
+    startBtnSort.addEventListener('click', async () => {
+        if (running) return;
+        if (!numInputSort) return console.error('numInput-sort element not found');
+        if (!visualizerSort) return console.error('visualizer-sort element not found');
+
+        const values = numInputSort.value.trim();
+        if (!values) return console.warn('No numbers entered');
+
+        const arr = values.split(',').map(s => Number(s.trim()));
+        if (arr.some(n => Number.isNaN(n))) return console.error('Invalid number in input');
+
+        const delay = (speedSliderSort && speedSliderSort.value) ? Number(speedSliderSort.value) : 20;
+        stopRequested = false;
+        running = true;
+        startBtnSort.disabled = true;
+        if (stopBtnSort) stopBtnSort.disabled = false;
+
+        await visualBogoSort(arr, visualizerSort, delay, () => stopRequested);
+
+        running = false;
+        startBtnSort.disabled = false;
+        if (stopBtnSort) stopBtnSort.disabled = true;
+    });
+} else {
+    console.warn('startBtn-sort element not found; start handler not attached');
+}
+
+if (stopBtnSort) {
+    stopBtnSort.onclick = () => {
+        stopRequested = true;
+    };
+}

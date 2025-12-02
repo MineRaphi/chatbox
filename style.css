@@ -220,7 +220,7 @@ body.red {
     opacity: 0;
 
     background: #cce7ff;
-    border: 5px solid #000;
+    border: 6px solid #252525;
 
     pointer-events: none;
     transition:
@@ -247,3 +247,6 @@ body.red {
   width: 20px;
   height: 20px; 
 }
+
+
+
