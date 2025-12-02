@@ -11,12 +11,15 @@ contextBridge.exposeInMainWorld('electronSocket', {
     onLoginSuccess: (cb) => ipcRenderer.on('user:loginSuccess', () => cb()),
     onLoginFailure: (cb) => ipcRenderer.on('user:loginFailure', (e, message) => cb(message)),
     recieveChatMessage: (cb) => ipcRenderer.on('chat:receiveMessage', (e, data) => cb(data)),
+    onPreferencesLoaded: (cb) => ipcRenderer.on('preferences:loaded', (e, prefs) => cb(prefs)),
     // scripts to main
     emit: (eventName, payload) => ipcRenderer.send('socket:emit', { eventName, payload }),
-    tryServerConnect: (ip, port) => ipcRenderer.send('server:select', { ip, port}),
-    register: (username, password) => ipcRenderer.send('user:register', { username, password}),
-    login: (username, password) => ipcRenderer.send('user:login', { username, password}),
-    sendChatMessage: (message) => ipcRenderer.send('chat:sendMessage', { message })
+    tryServerConnect: (ip, port) => ipcRenderer.send('server:select', { ip, port }),
+    register: (username, password) => ipcRenderer.send('user:register', { username, password }),
+    login: (username, password) => ipcRenderer.send('user:login', { username, password }),
+    sendChatMessage: (message) => ipcRenderer.send('chat:sendMessage', { message }),
+    loadPreferences: () => ipcRenderer.send('preferences:load'),
+    changePreference: (prefName, value) => ipcRenderer.send('preferences:change', { prefName, value }),
 })
 
 

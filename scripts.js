@@ -1,3 +1,5 @@
+import { setTheme } from './src/themes.js';
+
 // This renderer script now communicates with the main process for socket events.
 console.log('Renderer: setting up socket IPC listeners')
 
@@ -6,6 +8,8 @@ function sleep(ms) {
 }
 
 if (window.electronSocket) {
+    window.electronSocket.loadPreferences();
+
     window.electronSocket.onConnect((id) => {
         console.log('Connected to server via main process with id:', id)
         // If an error display was scheduled, cancel it and hide any visible error
@@ -66,6 +70,12 @@ if (window.electronSocket) {
         document.getElementById("LoginError").style.display = "none";
     });
 
+    window.electronSocket.onPreferencesLoaded((data) => {
+        console.log("Preferences loaded:", data);
+        // Update UI with loaded preferences
+        setTheme(data.theme, false);
+    });
+
     const connectBtn = document.getElementById("connectBtn");
     if (connectBtn) {
         connectBtn.addEventListener("click", function() {
@@ -114,33 +124,3 @@ else {
     console.warn('electronSocket API not available. Are you running inside Electron with the preload script?')
 }
 
-// const chatInput = document.getElementById("chatInput");
-// const chatMessages = document.getElementById("chatMessages");
-// function convertTextToChatMessage(text) {
-//     console.log("Converting text to chat message:", text);
-//     const textValue = text.trim();
-//     if (!textValue) return;
-
-//     const words = textValue.split(/\s+/);
-
-//     words.forEach(word => {
-//         // CASE SENSITIVE MATCH
-//         const emote = emotesCache.find(e => e.name === word);
-
-//         if (emote) {
-//             const img = document.createElement("img");
-//             img.src = emote.url;
-//             img.className = "inline-block h-8 align-middle mr-1 emote";
-//             img.style.marginBottom = "0.25rem";
-//             chatMessages.appendChild(img);
-//         } else {
-//             const span = document.createElement("span");
-//             span.textContent = word + " ";
-//             span.className = "text-white";
-//             chatMessages.appendChild(span);
-//         }
-//     });
-//     chatMessages.appendChild(document.createElement("br"));
-//     chatMessages.scrollTop = chatMessages.scrollHeight;
-//     chatInput.value = "";
-// }

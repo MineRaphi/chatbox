@@ -1,12 +1,15 @@
 import { app, BrowserWindow, ipcMain } from 'electron/main'
+import Store from 'electron-store'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { io } from 'socket.io-client'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+let preferences = {};
 
 let socket
+const store = new Store()
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -26,6 +29,12 @@ function createWindow() {
         }
     })
 
+    preferences.theme = store.get('theme', 'purple');
+    preferences.serverIP = store.get('serverIP');
+    preferences.serverPort = store.get('serverPort');
+    preferences.username = store.get('username');
+    preferences.password = store.get('password');
+    
     win.loadFile('index.html')
 
     return win
@@ -67,6 +76,16 @@ ipcMain.on('chat:sendMessage', (event, message) => {
         socket.emit('chatMessage', message);
     }
 })
+
+ipcMain.on('preferences:load', (event) => {
+    console.log("Loading preferences requested");
+    event.sender.send('preferences:loaded', preferences);
+});
+
+ipcMain.on('preferences:change', (event, { prefName, value }) => {
+    console.log(`Preference change requested: ${prefName} = ${value}`);
+    store.set(prefName, value);
+});
 
 function setupSocketListeners() {
     socket.on('connect', () => {
@@ -127,8 +146,5 @@ function setupSocketListeners() {
 }
 
 app.whenReady().then(() => {
-    createWindow()
-})
-
-/*create the external emote window*/
-
+    createWindow();
+});
