@@ -110,70 +110,70 @@ chatInput.addEventListener("keydown", (e) => {
     let selectedSuggestion = -1;
 
     function updateSuggestionBox() {
-    const value = chatInput.value;
-    const match = value.match(/:(\w*)$/);
-    if (!match) {
-        suggestionBox.style.display = "none";
-        suggestionItems = [];
-        selectedSuggestion = -1;
-        return;
-    }
-
-    // Update position every time the box is shown
-    const rect = chatInput.getBoundingClientRect();
-    suggestionBox.style.left = rect.left + window.scrollX + "px";
-    suggestionBox.style.display = "block";
-    suggestionBox.style.maxHeight = "200px";
-    suggestionBox.style.minWidth = rect.width + "px";
-
-    // After filling the box with items:
-    setTimeout(() => {
-        const actualHeight = suggestionBox.offsetHeight;
-        suggestionBox.style.top = (rect.top + window.scrollY - actualHeight) + "px";
-    }, 0);
-
-    const typed = match[1].toLowerCase();
-    const results = emotesCache.filter(e =>
-        e.name.toLowerCase().startsWith(typed)
-    );
-
-    if (results.length === 0) {
-        suggestionBox.style.display = "none";
-        suggestionItems = [];
-        selectedSuggestion = -1;
-        return;
-    }
-
-    suggestionBox.innerHTML = "";
-    suggestionBox.style.display = "block";
-    suggestionItems = [];
-
-    results.forEach((emote, idx) => {
-        const item = document.createElement("div");
-        item.style.padding = "4px";
-        item.style.cursor = "pointer";
-        item.style.display = "flex";
-        item.style.alignItems = "center";
-        item.innerHTML = `
-            <img src="${emote.url}" style="height:24px;margin-right:6px;">
-            <span style="color:white;">${emote.name}</span>
-        `;
-        item.onmouseenter = () => {
-            setSelectedSuggestion(idx);
-        };
-        item.onclick = () => {
-            chatInput.value = value.replace(/:(\w*)$/, emote.name + " ");
+        const value = chatInput.value;
+        const match = value.match(/:(\w*)$/);
+        if (!match) {
             suggestionBox.style.display = "none";
             suggestionItems = [];
             selectedSuggestion = -1;
-            chatInput.focus();
-        };
-        suggestionBox.appendChild(item);
-        suggestionItems.push(item);
-    });
+            return;
+        }
 
-    setSelectedSuggestion(0); 
-}
+        // Update position every time the box is shown
+        const rect = chatInput.getBoundingClientRect();
+        suggestionBox.style.left = rect.left + window.scrollX + "px";
+        suggestionBox.style.display = "block";
+        suggestionBox.style.maxHeight = "200px";
+        suggestionBox.style.minWidth = rect.width + "px";
+
+        // After filling the box with items:
+        setTimeout(() => {
+            const actualHeight = suggestionBox.offsetHeight;
+            suggestionBox.style.top = (rect.top + window.scrollY - actualHeight) + "px";
+        }, 0);
+
+        const typed = match[1].toLowerCase();
+        const results = emotesCache.filter(e =>
+            e.name.toLowerCase().startsWith(typed)
+        );
+
+        if (results.length === 0) {
+            suggestionBox.style.display = "none";
+            suggestionItems = [];
+            selectedSuggestion = -1;
+            return;
+        }
+
+        suggestionBox.innerHTML = "";
+        suggestionBox.style.display = "block";
+        suggestionItems = [];
+
+        results.forEach((emote, idx) => {
+            const item = document.createElement("div");
+            item.style.padding = "4px";
+            item.style.cursor = "pointer";
+            item.style.display = "flex";
+            item.style.alignItems = "center";
+            item.innerHTML = `
+                <img src="${emote.url}" style="height:24px;margin-right:6px;">
+                <span style="color:white;">${emote.name}</span>
+            `;
+            item.onmouseenter = () => {
+                setSelectedSuggestion(idx);
+            };
+            item.onclick = () => {
+                chatInput.value = value.replace(/:(\w*)$/, emote.name + " ");
+                suggestionBox.style.display = "none";
+                suggestionItems = [];
+                selectedSuggestion = -1;
+                chatInput.focus();
+            };
+            suggestionBox.appendChild(item);
+            suggestionItems.push(item);
+        });
+
+        setSelectedSuggestion(0); 
+    }
 
     function setSelectedSuggestion(idx) {
         suggestionItems.forEach((item, i) => {
