@@ -10,7 +10,7 @@
     tailwind.config = { theme: { extend: { colors: { primary: '#1d4ed8' } } } }
   </script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-neutral-800 to-purple-500 text-white">
+<body class="min-h-screen bg-gradient-to-br from-[var(--bg1)] to-[var(--bg2)] text-white">
   <div class="max-w-3xl mx-auto p-6">
     <div class="max-w-3xl mx-auto p-6 mt-12">
     <header class="flex items-center justify-between mb-6">
@@ -29,7 +29,7 @@
         <img src="../img/upload.png" alt="Upload icon" class="mx-auto w-14 h-14 mb-3">
         <p class="font-semibold">Drag & Drop images or mp 4 file here</p>
         <p class="text-xs text-white/70 mt-3">or</p>
-        <p  class="mt-3 px-4 py-2">Select File</p>
+        <button id="selectBtn" class="mt-3 px-4 py-2 bg-primary rounded-md">Select File</button>
         <input id="fileInput" type="file" accept="image/*,video/mp4" class="hidden" multiple aria-label="Media input">
       </div>
 
@@ -45,6 +45,7 @@
 
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
+    const selectBtn = document.getElementById('selectBtn');
     const previewArea = document.getElementById('previewArea');
     const clearBtn = document.getElementById('clearBtn');
 
@@ -62,7 +63,7 @@
 
     function isVideo(file) {
       if (!file) return false;
-  
+      // allow only mp4 (user requested MP4 support)
       if (file.type && file.type === 'video/mp4') return true;
       return /\.mp4$/i.test(file.name);
     }
@@ -131,7 +132,8 @@
     }
 
     // File selection
-    selectBtn.addEventListener('click', () => fileInput.click());
+    // Prevent the Select File button click from bubbling to the dropZone
+    selectBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
     dropZone.addEventListener('click', () => fileInput.click());
     dropZone.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -191,5 +193,7 @@
         });
       });
   </script>
+  <script type="module" src="themes.js"></script>
+  <script type="module" src="../scripts.js"></script>
 </body>
 </html>

@@ -20,36 +20,6 @@ body {
 }
 
 
-
-.uploadButton {
-  border: none;
-  display: flex;
-  padding: 0.75rem 1.5rem;
-  background-color: #d69913;
-  color: #ffffff;
-  font-size: 0.75rem;
-  line-height: 1rem;
-  font-weight: 700;
-  text-align: center;
-  cursor: pointer;
-  text-transform: uppercase;
-  vertical-align: middle;
-  align-items: center;
-  border-radius: 0.5rem;
-  user-select: none;
-  gap: 0.75rem;
-  box-shadow:
-    0 4px 6px -1px #488aec31,
-    0 2px 4px -1px #488aec17;
-  transition: all 0.6s ease;
-}
-
-uploadButton:hover {
-  box-shadow:
-    0 10px 15px -3px #488aec4f,
-    0 4px 6px -2px #488aec17;
-}
-
 button:focus,
 button:active {
   opacity: 0.85;
@@ -151,3 +121,124 @@ button svg {
     scrollbar-width: thin;
     scrollbar-color: #a855f7 rgba(80, 0, 120, 0.2);
 }
+
+/* THEMES */
+
+:root[data-theme="purple"] {
+  --bg1: ##262626;  
+  --bg2: #a855f7;  
+  --rbutton: #a855f7; 
+  --buttonhover: #9333ea;
+}
+
+:root[data-theme="red"] {
+  --bg1: #D7263D;  
+  --bg2: #02182B;
+  --rbutton: #D7263D; 
+  --buttonhover: #ad1025;
+}
+
+/* Purple theme */
+body.purple {
+  --bg1: #262626;
+  --bg2: #a855f7;
+  --rbutton: #a855f7;
+  --buttonhover: #9333ea;
+
+  /*big bomba button*/
+
+    --btn-border: #4f46e5;
+  --btn-bg-start: #312e81;
+  --btn-bg-mid: rgba(0, 0, 0, 0.6);
+  --btn-bg-end: rgba(0, 0, 0, 0.8);
+
+  --btn-shine: #c084fc;
+
+  --btn-glow-start: rgba(99, 102, 241, 0.1);
+  --btn-glow-mid: rgba(129, 140, 248, 0.2);
+
+  --icon-bg-start: rgba(99, 102, 241, 0.3);
+  --icon-bg-end: rgba(79, 70, 229, 0.1);
+
+  --icon-filter: drop-shadow(0 0 4px #a78bfa);
+
+  --text-title: #818cf8;
+  --text-sub: rgba(165, 180, 252, 0.6);
+
+  --arrow-color: #818cf8;
+}
+
+/* Red theme */
+body.red {
+  --bg1: #262626;
+  --bg2: #ef4444;
+  --rbutton: #ef4444;
+  --buttonhover: #b91c1c;
+
+  /*big bomba button*/
+  
+  --btn-bg-start: #8b1c1c; 
+  --btn-bg-mid: #a72a2a;    
+  --btn-bg-end: #d7263d;    
+
+  --btn-border: #b91c1c;
+  --btn-shine: #ef4444;
+  --btn-glow-start: rgba(239, 68, 68, 0.2);
+  --btn-glow-mid: rgba(239, 68, 68, 0.4);
+
+  --icon-bg-start: rgba(239, 68, 68, 0.3);
+  --icon-bg-end: rgba(239, 68, 68, 0.1);
+  --icon-filter: drop-shadow(0 0 4px #ef4444);
+
+  --text-title: #0c0c0c;
+  --text-sub: rgba(3, 1, 1, 0.7);
+
+  --arrow-color: #ef4444;
+}
+
+.transparentButton {
+    position:absolute;
+    background:transparent;
+    border:none;
+    background: rgba(0,0,0,0.0); /*change this to something else so it shows the btns*/
+    padding:0;
+    cursor: pointer;
+    display: block
+}
+
+
+#computerPanel {
+    position: absolute;
+    top: 335px;     
+    right: 210px;       
+    width: 0;
+    height: 0;
+    opacity: 0;
+    background: #cce7ff;
+    color: #000;
+    border: 5px solid #000000; 
+    border-radius: 0;        
+    overflow: hidden;
+    padding: 20px;
+    box-sizing: border-box;   
+    pointer-events: none;     
+    transition: 
+        width 0.2s ease,
+        height 0.2s ease,
+        top 0.2s ease,
+        left 0.2s ease,
+        opacity 0.2s ease;
+}
+
+#computerPanel.show {
+    width: 400px; 
+    height: 250px;  
+    opacity: 1;
+    top: 50%;       
+    left: 50%;      
+    transform: translate(-50%, -50%);
+    pointer-events: auto;    
+}
+
+
+

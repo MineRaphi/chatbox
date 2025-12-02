@@ -2,11 +2,11 @@ import { send7tvEmote, sendMessage } from "../scripts.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    // ---------- 1Emote cache ----------
+    // ---------- Emote cache ----------
     let emotesCache = [];
     let filteredEmotes = [];
 
-    // --------- emotefetching ----------
+    // --------- Emote Fetching ----------
     async function fetchEmotes() {
         try {
             // Global
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 let autocompleteJustSelected = false;
 
-// In your suggestion box keydown handler:
+//arrowkeys
 chatInput.addEventListener("keydown", (e) => {
     if (suggestionBox.style.display === "block" && suggestionItems.length > 0) {
         if (e.key === "ArrowDown") {
@@ -70,7 +70,7 @@ chatInput.addEventListener("keydown", (e) => {
             if (selectedSuggestion >= 0 && suggestionItems[selectedSuggestion]) {
                 suggestionItems[selectedSuggestion].click();
                 e.preventDefault();
-                autocompleteJustSelected = true; // Set flag!
+                autocompleteJustSelected = true;
             }
         } else if (e.key === "Escape") {
             suggestionBox.style.display = "none";
@@ -80,6 +80,7 @@ chatInput.addEventListener("keydown", (e) => {
     }
 });
 
+>>>>>>> simi
     // emote suggestion box
 
     let suggestionBox = document.createElement("div");
@@ -119,6 +120,12 @@ chatInput.addEventListener("keydown", (e) => {
             return;
         }
 
+    // Update position
+    const rect = chatInput.getBoundingClientRect();
+    suggestionBox.style.left = rect.left + window.scrollX + "px";
+    suggestionBox.style.display = "block";
+    suggestionBox.style.maxHeight = "200px";
+    suggestionBox.style.minWidth = rect.width + "px";
         // Update position every time the box is shown
         const rect = chatInput.getBoundingClientRect();
         suggestionBox.style.left = rect.left + window.scrollX + "px";

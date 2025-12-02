@@ -18,3 +18,6 @@ contextBridge.exposeInMainWorld('electronSocket', {
     login: (username, password) => ipcRenderer.send('user:login', { username, password}),
     sendChatMessage: (message) => ipcRenderer.send('chat:sendMessage', { message })
 })
+
+
+
