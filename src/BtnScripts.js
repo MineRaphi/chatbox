@@ -5,6 +5,8 @@ const computerBack  = document.getElementById("computerBack");
 
 const pageHome = document.getElementById("page-home");
 const pageBogo = document.getElementById("page-bogo");
+const pageNextDay = document.getElementById("page-nextday");
+const pagePrevDay = document.getElementById("page-prevday");
 
 
 computerBtn.onclick = () => {
@@ -27,6 +29,8 @@ function showPage(name) {
 
     pageHome.classList.add("hidden");
     pageBogo.classList.add("hidden");
+    pageNextDay.classList.add("hidden");
+    pagePrevDay.classList.add("hidden");
 
     computerBack.classList.add("hidden");
 
@@ -35,12 +39,28 @@ function showPage(name) {
     } else if (name === "bogo") {
         pageBogo.classList.remove("hidden");
         computerBack.classList.remove("hidden");
+    } else if (name === "nextday") {
+        pageNextDay.classList.remove("hidden");
+        computerBack.classList.remove("hidden");
+    } else if (name === "prevday") {
+        pagePrevDay.classList.remove("hidden");
+        computerBack.classList.remove("hidden");
     }
 }
 
 // OPEN BOGO
 document.getElementById("bogoSortBtn").onclick = () => {
     showPage("bogo");
+};
+
+// OPEN NEXT DAY CALCULATOR
+document.getElementById("nextDayBtn").onclick = () => {
+    showPage("nextday");
+};
+
+// OPEN PREVIOUS DAY CALCULATOR
+document.getElementById("prevDayBtn").onclick = () => {
+    showPage("prevday");
 };
 
 // BACK
@@ -114,3 +134,37 @@ if (stopBtnSort) {
         stopRequested = true;
     };
 }
+
+
+// next day calc
+const calculateBtn = document.getElementById('calculateBtn');
+const resultDiv = document.getElementById('result');
+
+if (calculateBtn) {
+    calculateBtn.addEventListener('click', () => {
+        const today = new Date();
+        const todayDay = today.getDay();
+        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const nextDay = (todayDay + 1) % 7;
+        const nextDayName = weekdays[nextDay];
+
+        resultDiv.textContent = `${nextDayName}`;
+    });
+}
+
+// previous day calc
+const calculatePrevBtn = document.getElementById('calculatePrevBtn');
+const resultPrevDiv = document.getElementById('resultPrev');
+
+if (calculatePrevBtn) {
+    calculatePrevBtn.addEventListener('click', () => {
+        const today = new Date();
+        const todayDay = today.getDay();
+        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const prevDay = (todayDay - 1 + 7) % 7;
+        const prevDayName = weekdays[prevDay];
+
+        resultPrevDiv.textContent = `${prevDayName}`;
+    });
+}
+
