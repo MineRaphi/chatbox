@@ -50,7 +50,7 @@ computerBack.onclick = () => {
 
 
 // BOGOSORT
-import { visualBogoSort } from './bogoSort.js';
+import * as sorts from './sort.js';
 
 const visualizerSort = document.getElementById('visualizer-sort');
 const numInputSort = document.getElementById('numInput-sort');
@@ -58,6 +58,7 @@ const startBtnSort = document.getElementById('startBtn-sort');
 const stopBtnSort = document.getElementById('stopBtn-sort');
 const speedSliderSort = document.getElementById('speedSlider-sort');
 const speedLabelSort = document.getElementById('speedLabel-sort');
+const algoSelectSort = document.getElementById('algoSelect-sort');
 
 let stopRequested = false;
 let running = false;
@@ -83,6 +84,7 @@ if (startBtnSort) {
         if (!values) return console.warn('No numbers entered');
 
         const arr = values.split(',').map(s => Number(s.trim()));
+        const algo = (algoSelectSort && algoSelectSort.value) ? algoSelectSort.value : 'visualBogoSort';
         if (arr.some(n => Number.isNaN(n))) return console.error('Invalid number in input');
 
         const delay = (speedSliderSort && speedSliderSort.value) ? Number(speedSliderSort.value) : 20;
@@ -91,7 +93,13 @@ if (startBtnSort) {
         startBtnSort.disabled = true;
         if (stopBtnSort) stopBtnSort.disabled = false;
 
-        await visualBogoSort(arr, visualizerSort, delay, () => stopRequested);
+        // Call chosen algorithm (must match exported function names from bogoSort.js)
+        const fn = sorts[algo];
+        if (typeof fn === 'function') {
+            await fn(arr, visualizerSort, delay, () => stopRequested);
+        } else {
+            console.error('Selected algorithm not found:', algo);
+        }
 
         running = false;
         startBtnSort.disabled = false;
