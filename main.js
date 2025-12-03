@@ -26,7 +26,7 @@ function createWindow() {
         }
     })
 
-    win.loadFile('src/supersecretpage.html')
+    win.loadFile('src/main.html')
 
     return win
 }
