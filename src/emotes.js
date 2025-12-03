@@ -1,5 +1,3 @@
-import { send7tvEmote, sendMessage } from "../scripts.js";
-
 document.addEventListener("DOMContentLoaded", () => {
 
     // ---------- Emote cache ----------
