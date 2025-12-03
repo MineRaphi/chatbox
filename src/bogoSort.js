@@ -30,7 +30,7 @@ function renderArray(arr, visualizer) {
     const bar = document.createElement('div');
     bar.style.height = `${n * 10}px`;
     bar.style.width = '20px';
-    bar.style.backgroundColor = 'purple';
+    bar.style.backgroundColor = 'grey';
     bar.style.margin = '0 2px';
     visualizer.appendChild(bar);
   });

@@ -50,7 +50,6 @@ computerBack.onclick = () => {
 
 
 // BOGOSORT
-// BOGOSORT
 import { visualBogoSort } from './bogoSort.js';
 
 const visualizerSort = document.getElementById('visualizer-sort');
@@ -63,10 +62,10 @@ const speedLabelSort = document.getElementById('speedLabel-sort');
 let stopRequested = false;
 let running = false;
 
-// disable stop until a run starts
+
 if (stopBtnSort) stopBtnSort.disabled = true;
 
-// initialize speed label and live update
+
 if (speedSliderSort && speedLabelSort) {
     speedLabelSort.textContent = `${speedSliderSort.value} ms`;
     speedSliderSort.oninput = () => {
