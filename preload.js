@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('electronSocket', {
     onLoginFailure: (cb) => ipcRenderer.on('user:loginFailure', (e, message) => cb(message)),
     recieveChatMessage: (cb) => ipcRenderer.on('chat:receiveMessage', (e, data) => cb(data)),
     onPreferencesLoaded: (cb) => ipcRenderer.on('preferences:loaded', (e, prefs) => cb(prefs)),
+    onChatHistory: (cb) => ipcRenderer.on('chat:history', (e, history) => cb(history)),
     // scripts to main
     emit: (eventName, payload) => ipcRenderer.send('socket:emit', { eventName, payload }),
     tryServerConnect: (ip, port) => ipcRenderer.send('server:select', { ip, port }),
@@ -20,6 +21,7 @@ contextBridge.exposeInMainWorld('electronSocket', {
     sendChatMessage: (message) => ipcRenderer.send('chat:sendMessage', { message }),
     loadPreferences: () => ipcRenderer.send('preferences:load'),
     changePreference: (prefName, value) => ipcRenderer.send('preferences:change', { prefName, value }),
+    getChatHistory: () => ipcRenderer.send('chat:getHistory'),
 })
 
 

@@ -88,6 +88,12 @@ ipcMain.on('preferences:change', (event, { prefName, value }) => {
     store.set(prefName, value);
 });
 
+ipcMain.on('chat:getHistory', (event) => {
+    if (socket && socket.connected) {
+        socket.emit('getChatHistory');
+    }
+});
+
 function setupSocketListeners() {
     socket.on('connect', () => {
         console.log('Socket connected (main):', socket.id)
@@ -142,6 +148,12 @@ function setupSocketListeners() {
     socket.on('chatMessage', (data) => {    
         BrowserWindow.getAllWindows().forEach(w => {
             w.webContents.send('chat:receiveMessage', data);
+        });
+    })
+
+    socket.on('chatHistory', (history) => {
+        BrowserWindow.getAllWindows().forEach(w => {
+            w.webContents.send('chat:history', history);
         });
     })
 }

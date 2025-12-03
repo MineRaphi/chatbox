@@ -15,10 +15,25 @@ addEventListener("keydown", (e) => {
     }
 });
 
+window.addEventListener('load', () => {
+    console.log("Window loaded, requesting chat history.");
+    if (window.electronSocket) {
+        window.electronSocket.getChatHistory();
+    }
+});
+
 if (window.electronSocket) {
     window.electronSocket.recieveChatMessage((data) => {
         console.log("Received chat message data:", data);
         convertDataToChatMessage(data);
+    });
+
+    window.electronSocket.onChatHistory((history) => {
+        console.log("Received chat history:", history);
+        chatMessages.innerHTML = ""; // Clear existing messages
+        history.forEach(msgData => {
+            convertDataToChatMessage(msgData);
+        });
     });
 }
 
