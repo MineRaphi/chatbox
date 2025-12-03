@@ -26,7 +26,7 @@ function createWindow() {
         }
     })
 
-    win.loadFile('index.html')
+    win.loadFile('src/login.html')
 
     return win
 }
