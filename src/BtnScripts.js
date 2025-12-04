@@ -136,30 +136,6 @@ if (stopBtnSort) {
 }
 
 
-<<<<<<< HEAD
-//Descriptions
-const algoDescSort = document.getElementById('algoDesc-sort');
-
-const algoDescriptions = {
-  visualBogoSort: '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0---BogoSort---\n Randomize the Array and check if its sorted, if not, do it again. \n Time complexity: \n Average: O(n * n!) \n Best Case: O(1) \n Worst Case: O(∞)',
-  visualBubbleSort: 'Bubble Sort: repeatedly compares and swaps adjacent elements — O(n²), easy to visualize.',
-  visualQuickSort: 'Quick Sort: divide-and-conquer using a pivot, average O(n log n).',
-  visualStalinSort: 'Stalin Sort: removes any element that breaks the sorted order — destructive and amusing.',
-  visualMiracleSort: 'Miracle Sort: experimental / recursive check (may recurse indefinitely).'
-};
-
-function updateAlgoDesc() {
-  if (!algoDescSort) return;
-  const key = (algoSelectSort && algoSelectSort.value) ? algoSelectSort.value : '';
-  algoDescSort.textContent = algoDescriptions[key] || '';
-}
-
-// attach listener and initialize
-if (algoSelectSort) {
-  algoSelectSort.addEventListener('change', updateAlgoDesc);
-  updateAlgoDesc();
-}
-=======
 // next day calc
 const calculateBtn = document.getElementById('calculateBtn');
 const resultDiv = document.getElementById('result');
@@ -192,7 +168,6 @@ if (calculatePrevBtn) {
     });
 }
 
->>>>>>> Lolo
 
 
 //Descriptions
