@@ -50,8 +50,7 @@ computerBack.onclick = () => {
 
 
 // BOGOSORT
-// BOGOSORT
-import { visualBogoSort } from './bogoSort.js';
+import * as sorts from './sort.js';
 
 const visualizerSort = document.getElementById('visualizer-sort');
 const numInputSort = document.getElementById('numInput-sort');
@@ -59,14 +58,15 @@ const startBtnSort = document.getElementById('startBtn-sort');
 const stopBtnSort = document.getElementById('stopBtn-sort');
 const speedSliderSort = document.getElementById('speedSlider-sort');
 const speedLabelSort = document.getElementById('speedLabel-sort');
+const algoSelectSort = document.getElementById('algoSelect-sort');
 
 let stopRequested = false;
 let running = false;
 
-// disable stop until a run starts
+
 if (stopBtnSort) stopBtnSort.disabled = true;
 
-// initialize speed label and live update
+
 if (speedSliderSort && speedLabelSort) {
     speedLabelSort.textContent = `${speedSliderSort.value} ms`;
     speedSliderSort.oninput = () => {
@@ -84,6 +84,7 @@ if (startBtnSort) {
         if (!values) return console.warn('No numbers entered');
 
         const arr = values.split(',').map(s => Number(s.trim()));
+        const algo = (algoSelectSort && algoSelectSort.value) ? algoSelectSort.value : 'visualBogoSort';
         if (arr.some(n => Number.isNaN(n))) return console.error('Invalid number in input');
 
         const delay = (speedSliderSort && speedSliderSort.value) ? Number(speedSliderSort.value) : 20;
@@ -92,7 +93,13 @@ if (startBtnSort) {
         startBtnSort.disabled = true;
         if (stopBtnSort) stopBtnSort.disabled = false;
 
-        await visualBogoSort(arr, visualizerSort, delay, () => stopRequested);
+        // Call chosen algorithm (must match exported function names from bogoSort.js)
+        const fn = sorts[algo];
+        if (typeof fn === 'function') {
+            await fn(arr, visualizerSort, delay, () => stopRequested);
+        } else {
+            console.error('Selected algorithm not found:', algo);
+        }
 
         running = false;
         startBtnSort.disabled = false;
@@ -106,4 +113,28 @@ if (stopBtnSort) {
     stopBtnSort.onclick = () => {
         stopRequested = true;
     };
+}
+
+
+//Descriptions
+const algoDescSort = document.getElementById('algoDesc-sort');
+
+const algoDescriptions = {
+  visualBogoSort: '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0---BogoSort---\n Randomize the Array and check if its sorted, if not, do it again. \n Time complexity: \n Average: O(n * n!) \n Best Case: O(1) \n Worst Case: O(∞)',
+  visualBubbleSort: 'Bubble Sort: repeatedly compares and swaps adjacent elements — O(n²), easy to visualize.',
+  visualQuickSort: 'Quick Sort: divide-and-conquer using a pivot, average O(n log n).',
+  visualStalinSort: 'Stalin Sort: removes any element that breaks the sorted order — destructive and amusing.',
+  visualMiracleSort: 'Miracle Sort: experimental / recursive check (may recurse indefinitely).'
+};
+
+function updateAlgoDesc() {
+  if (!algoDescSort) return;
+  const key = (algoSelectSort && algoSelectSort.value) ? algoSelectSort.value : '';
+  algoDescSort.textContent = algoDescriptions[key] || '';
+}
+
+// attach listener and initialize
+if (algoSelectSort) {
+  algoSelectSort.addEventListener('change', updateAlgoDesc);
+  updateAlgoDesc();
 }
