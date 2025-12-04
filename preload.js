@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('electronSocket', {
     loadPreferences: () => ipcRenderer.send('preferences:load'),
     changePreference: (prefName, value) => ipcRenderer.send('preferences:change', { prefName, value }),
     getChatHistory: () => ipcRenderer.send('chat:getHistory'),
+    send7tvEmote: (emoteId) => ipcRenderer.send('chat:send7tvEmote', { emoteId }),
 })
 
 

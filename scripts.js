@@ -124,3 +124,6 @@ else {
     console.warn('electronSocket API not available. Are you running inside Electron with the preload script?')
 }
 
+export function send7tvEmote(emoteId) {
+    window.electronSocket.send7tvEmote(emoteId);
+}

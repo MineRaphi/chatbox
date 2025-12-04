@@ -41,6 +41,28 @@ function createWindow() {
     return win
 }
 
+function createEmoteWindow(id) {
+    let x = Math.floor(Math.random() * ((1920 - 550) - 50 + 1)) + 50;
+    let y = Math.floor(Math.random() * ((1080 - 350) - 50 + 1)) + 50;
+    let size = 300;
+    const emoteWindow = new BrowserWindow({
+        transparent: true,
+        frame: false,
+        alwaysOnTop: true,
+        width: size,
+        height: size,
+        x: x,
+        y: y,
+    })
+
+    emoteWindow.loadURL(`file://${__dirname}/emote.html#${id}`);
+    emoteWindow.setIgnoreMouseEvents(true)
+
+    setTimeout(() => {
+        emoteWindow.close();
+    }, 3500);
+}
+
 // Forward messages from renderer to the socket server
 ipcMain.on('socket:emit', (event, { eventName, payload }) => {
     if (socket && socket.connected) {
@@ -92,6 +114,13 @@ ipcMain.on('chat:getHistory', (event) => {
     if (socket && socket.connected) {
         socket.emit('getChatHistory');
     }
+});
+
+ipcMain.on('chat:send7tvEmote', (event, { emoteId }) => {
+    if (socket && socket.connected) {
+        socket.emit('7tvEmote', emoteId);
+    }
+    createEmoteWindow(emoteId);
 });
 
 function setupSocketListeners() {
@@ -156,8 +185,22 @@ function setupSocketListeners() {
             w.webContents.send('chat:history', history);
         });
     })
+
+    socket.on('7tvEmote', (emoteId) => {
+        createEmoteWindow(emoteId);
+    })
 }
 
 app.whenReady().then(() => {
     createWindow();
+    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
+    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
+    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
+    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
+    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
+    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
+    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
+    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
+    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
+    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
 });

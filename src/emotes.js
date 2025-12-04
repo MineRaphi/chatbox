@@ -1,3 +1,5 @@
+import { send7tvEmote } from '../scripts.js';
+
 document.addEventListener("DOMContentLoaded", () => {
 
     // ---------- Emote cache ----------
@@ -29,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             emotesCache = allEmotes.map(e => {
                 const url = `https://cdn.7tv.app/emote/${e.id}/2x.webp`;
-                return { name: e.name, url };
+                return { name: e.name, url, id: e.id };
             });
 
             console.log("Total emotes fetched:", emotesCache.length);
@@ -202,7 +204,7 @@ function renderEmotePanel() {
         img.className = "max-h-10 w-auto cursor-pointer hover:scale-110 transition";
 
         img.addEventListener("click", () => {
-            send7tvEmote(emote.name);
+            send7tvEmote(emote.id);
         });
 
         grid.appendChild(img);
