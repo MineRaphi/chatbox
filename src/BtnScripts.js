@@ -5,6 +5,8 @@ const computerBack  = document.getElementById("computerBack");
 
 const pageHome = document.getElementById("page-home");
 const pageBogo = document.getElementById("page-bogo");
+const pageNextDay = document.getElementById("page-nextday");
+const pagePrevDay = document.getElementById("page-prevday");
 
 
 computerBtn.onclick = () => {
@@ -27,6 +29,8 @@ function showPage(name) {
 
     pageHome.classList.add("hidden");
     pageBogo.classList.add("hidden");
+    pageNextDay.classList.add("hidden");
+    pagePrevDay.classList.add("hidden");
 
     computerBack.classList.add("hidden");
 
@@ -34,6 +38,12 @@ function showPage(name) {
         pageHome.classList.remove("hidden");
     } else if (name === "bogo") {
         pageBogo.classList.remove("hidden");
+        computerBack.classList.remove("hidden");
+    } else if (name === "nextday") {
+        pageNextDay.classList.remove("hidden");
+        computerBack.classList.remove("hidden");
+    } else if (name === "prevday") {
+        pagePrevDay.classList.remove("hidden");
         computerBack.classList.remove("hidden");
     }
 }
@@ -43,6 +53,16 @@ document.getElementById("bogoSortBtn").onclick = () => {
     showPage("bogo");
 };
 
+// OPEN NEXT DAY CALCULATOR
+document.getElementById("nextDayBtn").onclick = () => {
+    showPage("nextday");
+};
+
+// OPEN PREVIOUS DAY CALCULATOR
+document.getElementById("prevDayBtn").onclick = () => {
+    showPage("prevday");
+};
+
 // BACK
 computerBack.onclick = () => {
     showPage("home");
@@ -50,7 +70,7 @@ computerBack.onclick = () => {
 
 
 // BOGOSORT
-import { visualBogoSort } from './bogoSort.js';
+import * as sorts from './sort.js';
 
 const visualizerSort = document.getElementById('visualizer-sort');
 const numInputSort = document.getElementById('numInput-sort');
@@ -58,6 +78,7 @@ const startBtnSort = document.getElementById('startBtn-sort');
 const stopBtnSort = document.getElementById('stopBtn-sort');
 const speedSliderSort = document.getElementById('speedSlider-sort');
 const speedLabelSort = document.getElementById('speedLabel-sort');
+const algoSelectSort = document.getElementById('algoSelect-sort');
 
 let stopRequested = false;
 let running = false;
@@ -83,6 +104,7 @@ if (startBtnSort) {
         if (!values) return console.warn('No numbers entered');
 
         const arr = values.split(',').map(s => Number(s.trim()));
+        const algo = (algoSelectSort && algoSelectSort.value) ? algoSelectSort.value : 'visualBogoSort';
         if (arr.some(n => Number.isNaN(n))) return console.error('Invalid number in input');
 
         const delay = (speedSliderSort && speedSliderSort.value) ? Number(speedSliderSort.value) : 20;
@@ -91,7 +113,13 @@ if (startBtnSort) {
         startBtnSort.disabled = true;
         if (stopBtnSort) stopBtnSort.disabled = false;
 
-        await visualBogoSort(arr, visualizerSort, delay, () => stopRequested);
+        // Call chosen algorithm (must match exported function names from bogoSort.js)
+        const fn = sorts[algo];
+        if (typeof fn === 'function') {
+            await fn(arr, visualizerSort, delay, () => stopRequested);
+        } else {
+            console.error('Selected algorithm not found:', algo);
+        }
 
         running = false;
         startBtnSort.disabled = false;
@@ -106,3 +134,37 @@ if (stopBtnSort) {
         stopRequested = true;
     };
 }
+
+
+// next day calc
+const calculateBtn = document.getElementById('calculateBtn');
+const resultDiv = document.getElementById('result');
+
+if (calculateBtn) {
+    calculateBtn.addEventListener('click', () => {
+        const today = new Date();
+        const todayDay = today.getDay();
+        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const nextDay = (todayDay + 1) % 7;
+        const nextDayName = weekdays[nextDay];
+
+        resultDiv.textContent = `${nextDayName}`;
+    });
+}
+
+// previous day calc
+const calculatePrevBtn = document.getElementById('calculatePrevBtn');
+const resultPrevDiv = document.getElementById('resultPrev');
+
+if (calculatePrevBtn) {
+    calculatePrevBtn.addEventListener('click', () => {
+        const today = new Date();
+        const todayDay = today.getDay();
+        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const prevDay = (todayDay - 1 + 7) % 7;
+        const prevDayName = weekdays[prevDay];
+
+        resultPrevDiv.textContent = `${prevDayName}`;
+    });
+}
+
