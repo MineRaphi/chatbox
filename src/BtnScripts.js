@@ -5,6 +5,8 @@ const computerBack  = document.getElementById("computerBack");
 
 const pageHome = document.getElementById("page-home");
 const pageBogo = document.getElementById("page-bogo");
+const pageNextDay = document.getElementById("page-nextday");
+const pagePrevDay = document.getElementById("page-prevday");
 
 
 computerBtn.onclick = () => {
@@ -27,6 +29,8 @@ function showPage(name) {
 
     pageHome.classList.add("hidden");
     pageBogo.classList.add("hidden");
+    pageNextDay.classList.add("hidden");
+    pagePrevDay.classList.add("hidden");
 
     computerBack.classList.add("hidden");
 
@@ -35,12 +39,28 @@ function showPage(name) {
     } else if (name === "bogo") {
         pageBogo.classList.remove("hidden");
         computerBack.classList.remove("hidden");
+    } else if (name === "nextday") {
+        pageNextDay.classList.remove("hidden");
+        computerBack.classList.remove("hidden");
+    } else if (name === "prevday") {
+        pagePrevDay.classList.remove("hidden");
+        computerBack.classList.remove("hidden");
     }
 }
 
 // OPEN BOGO
 document.getElementById("bogoSortBtn").onclick = () => {
     showPage("bogo");
+};
+
+// OPEN NEXT DAY CALCULATOR
+document.getElementById("nextDayBtn").onclick = () => {
+    showPage("nextday");
+};
+
+// OPEN PREVIOUS DAY CALCULATOR
+document.getElementById("prevDayBtn").onclick = () => {
+    showPage("prevday");
 };
 
 // BACK
@@ -114,6 +134,65 @@ if (stopBtnSort) {
         stopRequested = true;
     };
 }
+
+
+<<<<<<< HEAD
+//Descriptions
+const algoDescSort = document.getElementById('algoDesc-sort');
+
+const algoDescriptions = {
+  visualBogoSort: '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0---BogoSort---\n Randomize the Array and check if its sorted, if not, do it again. \n Time complexity: \n Average: O(n * n!) \n Best Case: O(1) \n Worst Case: O(∞)',
+  visualBubbleSort: 'Bubble Sort: repeatedly compares and swaps adjacent elements — O(n²), easy to visualize.',
+  visualQuickSort: 'Quick Sort: divide-and-conquer using a pivot, average O(n log n).',
+  visualStalinSort: 'Stalin Sort: removes any element that breaks the sorted order — destructive and amusing.',
+  visualMiracleSort: 'Miracle Sort: experimental / recursive check (may recurse indefinitely).'
+};
+
+function updateAlgoDesc() {
+  if (!algoDescSort) return;
+  const key = (algoSelectSort && algoSelectSort.value) ? algoSelectSort.value : '';
+  algoDescSort.textContent = algoDescriptions[key] || '';
+}
+
+// attach listener and initialize
+if (algoSelectSort) {
+  algoSelectSort.addEventListener('change', updateAlgoDesc);
+  updateAlgoDesc();
+}
+=======
+// next day calc
+const calculateBtn = document.getElementById('calculateBtn');
+const resultDiv = document.getElementById('result');
+
+if (calculateBtn) {
+    calculateBtn.addEventListener('click', () => {
+        const today = new Date();
+        const todayDay = today.getDay();
+        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const nextDay = (todayDay + 1) % 7;
+        const nextDayName = weekdays[nextDay];
+
+        resultDiv.textContent = `${nextDayName}`;
+    });
+}
+
+// previous day calc
+const calculatePrevBtn = document.getElementById('calculatePrevBtn');
+const resultPrevDiv = document.getElementById('resultPrev');
+
+if (calculatePrevBtn) {
+    calculatePrevBtn.addEventListener('click', () => {
+        const today = new Date();
+        const todayDay = today.getDay();
+        const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const prevDay = (todayDay - 1 + 7) % 7;
+        const prevDayName = weekdays[prevDay];
+
+        resultPrevDiv.textContent = `${prevDayName}`;
+    });
+}
+
+>>>>>>> Lolo
 
 
 //Descriptions
