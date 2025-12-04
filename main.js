@@ -193,14 +193,4 @@ function setupSocketListeners() {
 
 app.whenReady().then(() => {
     createWindow();
-    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
-    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
-    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
-    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
-    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
-    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
-    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
-    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
-    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
-    createEmoteWindow("01F6NF001G00044EM07K5E6WYK");
 });
