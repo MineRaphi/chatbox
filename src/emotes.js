@@ -45,40 +45,37 @@ document.addEventListener("DOMContentLoaded", () => {
         renderEmotePanel();
     });
 
-
     const chatInput = document.getElementById("chatInput");
     const chatMessages = document.getElementById("chatMessages");
 
+    let autocompleteJustSelected = false;
 
-
-let autocompleteJustSelected = false;
-
-//arrowkeys
-chatInput.addEventListener("keydown", (e) => {
-    if (suggestionBox.style.display === "block" && suggestionItems.length > 0) {
-        if (e.key === "ArrowDown") {
-            e.preventDefault();
-            let next = (selectedSuggestion + 1) % suggestionItems.length;
-            setSelectedSuggestion(next);
-            suggestionItems[next].scrollIntoView({ block: "nearest" });
-        } else if (e.key === "ArrowUp") {
-            e.preventDefault();
-            let prev = (selectedSuggestion - 1 + suggestionItems.length) % suggestionItems.length;
-            setSelectedSuggestion(prev);
-            suggestionItems[prev].scrollIntoView({ block: "nearest" });
-        } else if (e.key === "Enter") {
-            if (selectedSuggestion >= 0 && suggestionItems[selectedSuggestion]) {
-                suggestionItems[selectedSuggestion].click();
+    //arrowkeys
+    chatInput.addEventListener("keydown", (e) => {
+        if (suggestionBox.style.display === "block" && suggestionItems.length > 0) {
+            if (e.key === "ArrowDown") {
                 e.preventDefault();
-                autocompleteJustSelected = true;
+                let next = (selectedSuggestion + 1) % suggestionItems.length;
+                setSelectedSuggestion(next);
+                suggestionItems[next].scrollIntoView({ block: "nearest" });
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                let prev = (selectedSuggestion - 1 + suggestionItems.length) % suggestionItems.length;
+                setSelectedSuggestion(prev);
+                suggestionItems[prev].scrollIntoView({ block: "nearest" });
+            } else if (e.key === "Enter") {
+                if (selectedSuggestion >= 0 && suggestionItems[selectedSuggestion]) {
+                    suggestionItems[selectedSuggestion].click();
+                    e.preventDefault();
+                    autocompleteJustSelected = true;
+                }
+            } else if (e.key === "Escape") {
+                suggestionBox.style.display = "none";
+                suggestionItems = [];
+                selectedSuggestion = -1;
             }
-        } else if (e.key === "Escape") {
-            suggestionBox.style.display = "none";
-            suggestionItems = [];
-            selectedSuggestion = -1;
         }
-    }
-});
+    });
 
     // emote suggestion box
 
@@ -119,12 +116,12 @@ chatInput.addEventListener("keydown", (e) => {
             return;
         }
 
-    // Update position
-    const rect = chatInput.getBoundingClientRect();
-    suggestionBox.style.left = rect.left + window.scrollX + "px";
-    suggestionBox.style.display = "block";
-    suggestionBox.style.maxHeight = "200px";
-    suggestionBox.style.minWidth = rect.width + "px";
+        // Update position
+        const rect = chatInput.getBoundingClientRect();
+        suggestionBox.style.left = rect.left + window.scrollX + "px";
+        suggestionBox.style.display = "block";
+        suggestionBox.style.maxHeight = "200px";
+        suggestionBox.style.minWidth = rect.width + "px";
         // Update position every time the box is shown
         suggestionBox.style.left = rect.left + window.scrollX + "px";
         suggestionBox.style.display = "block";
@@ -189,42 +186,38 @@ chatInput.addEventListener("keydown", (e) => {
 
     chatInput.addEventListener("input", updateSuggestionBox);
 
-function renderEmotePanel() {
-    const grid = document.getElementById("emoteGrid");
-    if (!grid) return;
+    function renderEmotePanel() {
+        const grid = document.getElementById("emoteGrid");
+        if (!grid) return;
 
-    grid.innerHTML = "";
+        grid.innerHTML = "";
 
-    filteredEmotes.forEach(emote => {
-        const img = document.createElement("img");
-        img.src = emote.url;
-        img.title = emote.name;
+        filteredEmotes.forEach(emote => {
+            const img = document.createElement("img");
+            img.src = emote.url;
+            img.title = emote.name;
 
-        // fixed
-        img.className = "max-h-10 w-auto cursor-pointer hover:scale-110 transition";
+            img.className = "max-h-10 w-auto cursor-pointer hover:scale-110 transition";
 
-        img.addEventListener("click", () => {
-            send7tvEmote(emote.id);
+            img.addEventListener("click", () => {
+                send7tvEmote(emote.id);
+            });
+
+            grid.appendChild(img);
         });
+    }
 
-        grid.appendChild(img);
+    const emoteSearch = document.getElementById("emoteSearch");
+
+    emoteSearch.addEventListener("input", () => {
+        const text = emoteSearch.value.toLowerCase();
+
+        filteredEmotes = emotesCache.filter(e =>
+            e.name.toLowerCase().includes(text)
+        );
+
+        renderEmotePanel();
     });
-}
-
-
-const emoteSearch = document.getElementById("emoteSearch");
-
-emoteSearch.addEventListener("input", () => {
-    const text = emoteSearch.value.toLowerCase();
-
-    filteredEmotes = emotesCache.filter(e =>
-        e.name.toLowerCase().includes(text)
-    );
-
-    renderEmotePanel();
-});
-
-
 });
 
 

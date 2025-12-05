@@ -181,6 +181,7 @@ const algoDescriptions = {
   visualMiracleSort: 'Miracle Sort: experimental / recursive check (may recurse indefinitely).'
 };
 
+// Update description based on selected algorithm
 function updateAlgoDesc() {
   if (!algoDescSort) return;
   const key = (algoSelectSort && algoSelectSort.value) ? algoSelectSort.value : '';

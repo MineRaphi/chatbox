@@ -3,6 +3,7 @@ const chatMessages = document.getElementById("chatMessages");
 let emotesCache = [];
 let filteredEmotes = [];
 
+// Send message on Enter key
 addEventListener("keydown", (e) => {
     if (e.key === "Enter" && document.activeElement === chatInput) {
         e.preventDefault();
@@ -15,6 +16,7 @@ addEventListener("keydown", (e) => {
     }
 });
 
+// Request chat history on load
 window.addEventListener('load', () => {
     console.log("Window loaded, requesting chat history.");
     if (window.electronSocket) {
@@ -22,6 +24,7 @@ window.addEventListener('load', () => {
     }
 });
 
+// Receive chat messages
 if (window.electronSocket) {
     window.electronSocket.recieveChatMessage((data) => {
         console.log("Received chat message data:", data);
@@ -37,6 +40,7 @@ if (window.electronSocket) {
     });
 }
 
+// Convert data to chat message element
 async function convertDataToChatMessage(data) {
     console.log("Converting data to chat message:", data);
     const message = document.createElement("div");
@@ -48,6 +52,7 @@ async function convertDataToChatMessage(data) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// Emote replacement
 async function emoteReplacment(text) {
     const words = text.split(/\s+/);
     const fragment = document.createDocumentFragment();
@@ -72,6 +77,7 @@ async function emoteReplacment(text) {
     return fragment;
 }
 
+// Fetch emotes from 7tv
 async function fetchEmotes() {
     try {
         // Global
