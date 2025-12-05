@@ -1,5 +1,6 @@
 {
   "name": "chatbox",
+  "productName": "chatbox",
   "version": "1.0.0",
   "description": "spam your friends with meme",
   "homepage": "https://github.com/MineRaphi/chatbox#readme",
@@ -24,6 +25,7 @@
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.1.17",
+    "electron-store": "^11.0.2",
     "socket.io-client": "^4.8.1",
     "tailwindcss": "^4.1.17"
   }

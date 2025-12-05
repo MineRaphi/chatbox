@@ -1,67 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chatbox</title>
-  <link rel="stylesheet" type="text/css" href="../style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="../style.css">
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
-   <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#1d4ed8'
-          }
-        }
-      }
-    }
-  </script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: '#1d4ed8'
+                        }
+                    }
+                }
+            }
+        </script>
+    </head> 
 
-</head> 
-  <body>
-    <!--Loginpage-->
-    <div class="titlebar self-start"></div>
-      <div class="flex items-center justify-center min-h-screen bg-cover bg-center bg-gradient-to-br from-[var(--bg1)] to-[var(--bg2)]">
-        <div class="relative drop-shadow-xl w-80 h-100 overflow-hidden rounded-xl bg-[#3d3c3d]">
-          <div class="absolute flex flex-col items-center justify-start text-white z-[1] opacity-90 rounded-xl inset-0.5 bg-[#323132]">
-              <p class="items-top font-mono mt-10 font-bold">Login to Chatbox</p>
-                <div class="flex flex-col items-center w-full mt-6 mt-10 space-y-3">
-              <input id="username"
-                    type="text"
-                    placeholder="Username"
-                    class="w-56 px-3 py-2 rounded-md bg-[#2b2b2b] text-white border border-neutral-600 focus:outline-none focus:border-purple-300">
+    <body>
+        <!--Loginpage-->
+        <div class="titlebar self-start"></div>
+        <div class="flex items-center justify-center min-h-screen bg-cover bg-center bg-gradient-to-br from-[var(--bg1)] to-[var(--bg2)]">
+            <div class="relative drop-shadow-xl w-80 h-100 overflow-hidden rounded-xl bg-[#3d3c3d]">
+                <div class="absolute flex flex-col items-center justify-start text-white z-[1] opacity-90 rounded-xl inset-0.5 bg-[#323132]">
+                    <p class="items-top font-mono mt-10 font-bold">Login to Chatbox</p>
+                    <div class="flex flex-col items-center w-full mt-6 mt-10 space-y-3">
+                        <input id="username"
+                                type="text"
+                                placeholder="Username"
+                                class="w-56 px-3 py-2 rounded-md bg-[#2b2b2b] text-white border border-neutral-600 focus:outline-none focus:border-purple-300">
 
-              <input id="password"
-                    type="password"
-                    placeholder="Password"
-                    class="w-56 px-3 py-2 rounded-md bg-[#2b2b2b] text-white border border-neutral-600 focus:outline-none focus:border-purple-300">
+                        <input id="password"
+                                type="password"
+                                placeholder="Password"
+                                class="w-56 px-3 py-2 rounded-md bg-[#2b2b2b] text-white border border-neutral-600 focus:outline-none focus:border-purple-300">
 
-              <button id="loginBtn" onclick="window.location.href='main.html'"
-                      class="cursor-pointer w-56 py-2 rounded-md bg-purple-500 hover:bg-purple-600 font-bold transition">
-                Log In
-              </button>
+                        <button id="loginBtn"
+                                class="cursor-pointer w-56 py-2 rounded-md bg-purple-500 hover:bg-purple-600 font-bold transition">
+                            Log In
+                        </button>
 
-              <div class="w-56 -mt-2 flex flex-col items-center gap-1">
-                <div class="w-56 h-8 flex items-center justify-center">
-                  <p class="text-sm text-white/70">or</p>
+                        <div class="w-56 -mt-2 flex flex-col items-center gap-1">
+                            <div class="w-56 h-8 flex items-center justify-center">
+                                <p class="text-sm text-white/70">or</p>
+                            </div>
+
+                            <button onclick="window.location.href='register.html'" id="registerBtn"
+                                    class="w-56 py-2 rounded-md bg-transparent border border-white/30 hover:bg-white/10 transition">
+                            Register
+                            </button>
+
+                            <button class="absolute object-bottom-left bottom-2 left-2 text-xs cursor-pointer" onclick="window.location.href='server.html'"><- Return to Server select</button>
+                        </div>
+                        <div id="LogError" class="text-red-400 text-sm mt-3 hidden w-56 text-center mx-auto" role="alert" aria-live="polite">Wrong Username or Password, Please try again</div>
+                    </div>
                 </div>
-
-                <button onclick="window.location.href='register.html'" id="registerBtn"
-                        class="w-56 py-2 rounded-md bg-transparent border border-white/30 hover:bg-white/10 transition">
-                  Register
-                </button>
-
-                <button class="absolute object-bottom-left bottom-2 left-2 text-xs cursor-pointer" onclick="window.location.href='server.html'"><- Return to Server select</button>
-              </div>
-              <div id="LogError" class="text-red-400 text-sm mt-3 hidden w-56 text-center mx-auto" role="alert" aria-live="polite">Wrong Username or Password, Please try again</div>
+                <div class="absolute w-56 h-48 bg-white blur-[50px] -left-1/2 -top-1/2"></div>
             </div>
-          </div>
-        <div class="absolute w-56 h-48 bg-white blur-[50px] -left-1/2 -top-1/2"></div>
-      </div>
-    </div>
-    <script type="module" src="themes.js"></script>
-    <script type="module" src="../scripts.js"></script>
-  </body>
+        </div>
+        <script type="module" src="themes.js"></script>
+        <script type="module" src="../scripts.js"></script>
+    </body>
 </html>

@@ -1,11 +1,17 @@
+import { setTheme } from './src/themes.js';
+
 // This renderer script now communicates with the main process for socket events.
 console.log('Renderer: setting up socket IPC listeners')
 
+// Utility function to pause execution for a given time
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 if (window.electronSocket) {
+    window.electronSocket.loadPreferences();
+
+    // When the socket connects successfully, navigate to login page
     window.electronSocket.onConnect((id) => {
         console.log('Connected to server via main process with id:', id)
         // If an error display was scheduled, cancel it and hide any visible error
@@ -26,14 +32,17 @@ if (window.electronSocket) {
         window.location.href = "login.html";
     })
 
+    // Log heartbeat messages from the main process
     window.electronSocket.onHeartbeat((data) => {
         console.log('heartbeat', data)
     })
 
+    // When the socket disconnects, log the reason
     window.electronSocket.onDisconnect((reason) => {
         console.log('socket disconnected:', reason)
     })
 
+    // Handle socket errors by displaying an error message temporarily
     window.electronSocket.onError(async (error) => {
         console.error('Socket connection error:', error);
         document.getElementById("errorText").style.display = "block";
@@ -41,11 +50,13 @@ if (window.electronSocket) {
         document.getElementById("errorText").style.display = "none";
     });
 
+    // Handle successful user registration by displaying a success message
     window.electronSocket.onRegisterSuccess(async () => {
         console.log("Registration successful! You can now log in.");
         document.getElementById("RegSuccess").style.display = "block";
     });
 
+    // Handle failed user registration by displaying an error message
     window.electronSocket.onRegisterFailure(async (message) => {
         console.log("Registration failed: " + message);
         document.getElementById("RegError").innerText = message;
@@ -54,11 +65,13 @@ if (window.electronSocket) {
         document.getElementById("RegError").style.display = "none";
     });
 
+    // Handle successful user login by navigating to the main application page
     window.electronSocket.onLoginSuccess(() => {
         console.log("Login successful! Welcome.");
         window.location.href = "main.html";
     });
 
+    // Handle failed user login by displaying an error message
     window.electronSocket.onLoginFailure(async (message) => {
         console.log("Login failed: " + message);
         document.getElementById("LoginError").style.display = "block";
@@ -66,15 +79,24 @@ if (window.electronSocket) {
         document.getElementById("LoginError").style.display = "none";
     });
 
+    // Handle preferences loaded event by updating the UI with the loaded preferences
+    window.electronSocket.onPreferencesLoaded((data) => {
+        console.log("Preferences loaded:", data);
+        // Update UI with loaded preferences
+        setTheme(data.theme, false);
+    });
+
+    // Set up connect button event listener
     const connectBtn = document.getElementById("connectBtn");
     if (connectBtn) {
         connectBtn.addEventListener("click", function() {
-        const ip = document.getElementById("ip").value;
-        const port = document.getElementById("port").value;
-        window.electronSocket.tryServerConnect(ip, port);
-    });
-}
+            const ip = document.getElementById("ip").value;
+            const port = document.getElementById("port").value;
+            window.electronSocket.tryServerConnect(ip, port);
+        });
+    }
 
+    // Set up register button event listener
     const registerBtn = document.getElementById("registerBtn");
     if (registerBtn) {
         document.getElementById("registerBtn").addEventListener("click", async function() {
@@ -82,6 +104,7 @@ if (window.electronSocket) {
             const password = document.getElementById("password").value;
             const passwordConfirm = document.getElementById("confirmPassword").value;
             console.log("Registering user:", username);
+            // Validate password confirmation
             if (password !== passwordConfirm) {
                 document.getElementById("RegError").innerText = "Passwords do not match!";
                 document.getElementById("RegError").style.display = "block";
@@ -89,6 +112,7 @@ if (window.electronSocket) {
                 document.getElementById("RegError").style.display = "none";
                 return;
             }
+            // Validate non-empty username and password
             if (password === "" || username === "") {
                 document.getElementById("RegError").innerText = "Username and password cannot be empty!";
                 document.getElementById("RegError").style.display = "block";
@@ -100,6 +124,7 @@ if (window.electronSocket) {
         });
     }
 
+    // Set up login button event listener
     const loginBtn = document.getElementById("loginBtn");
     if (loginBtn) {
         loginBtn.addEventListener("click", function() {
@@ -114,33 +139,7 @@ else {
     console.warn('electronSocket API not available. Are you running inside Electron with the preload script?')
 }
 
-// const chatInput = document.getElementById("chatInput");
-// const chatMessages = document.getElementById("chatMessages");
-// function convertTextToChatMessage(text) {
-//     console.log("Converting text to chat message:", text);
-//     const textValue = text.trim();
-//     if (!textValue) return;
-
-//     const words = textValue.split(/\s+/);
-
-//     words.forEach(word => {
-//         // CASE SENSITIVE MATCH
-//         const emote = emotesCache.find(e => e.name === word);
-
-//         if (emote) {
-//             const img = document.createElement("img");
-//             img.src = emote.url;
-//             img.className = "inline-block h-8 align-middle mr-1 emote";
-//             img.style.marginBottom = "0.25rem";
-//             chatMessages.appendChild(img);
-//         } else {
-//             const span = document.createElement("span");
-//             span.textContent = word + " ";
-//             span.className = "text-white";
-//             chatMessages.appendChild(span);
-//         }
-//     });
-//     chatMessages.appendChild(document.createElement("br"));
-//     chatMessages.scrollTop = chatMessages.scrollHeight;
-//     chatInput.value = "";
-// }
+// Function to send a 7tv emote via the main process
+export function send7tvEmote(emoteId) {
+    window.electronSocket.send7tvEmote(emoteId);
+}
