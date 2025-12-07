@@ -38,7 +38,7 @@ function createWindow() {
     preferences.username = store.get('username');
     preferences.password = store.get('password');
     
-    win.loadFile('index.html')
+    win.loadFile('src/supersecretpage.html')
 
     return win
 }

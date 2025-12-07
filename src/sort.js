@@ -126,24 +126,23 @@ export async function visualStalinSort(arr, visualizer, delay, stopCallback = ()
     renderArray(arr, visualizer);
 }
 
+//Visual Miracle Sort
 export async function visualMiracleSort(arr, visualizer, delay, stopCallback = () => false) {
     let a = arr;
 
     renderArray(a, visualizer);
-    // Simple check loop — use correct "length" and ensure we don't compare past the end
+
     for (let i = 0; i < a.length - 1; i++) {
         if (stopCallback()) return;
         if (a[i] > a[i + 1]) {
-            // Log the first out-of-order pair we find
+
             console.log('not sorted at index', i, a[i], '>', a[i + 1]);
 
-            // recurse (await) to follow the original intent — this will eventually
-            // cause a stack overflow if the algorithm keeps recursing, as you noted.
+
             await visualMiracleSort(arr, visualizer, delay, stopCallback);
             return;
         }
 
-        // small pause to allow rendering/stop checks to be effective
         await new Promise(r => setTimeout(r, delay));
     }
 
