@@ -146,13 +146,6 @@ function setupSocketListeners() {
         })
     })
 
-    // Heartbeat received
-    socket.on('heartbeat', (data) => {
-        BrowserWindow.getAllWindows().forEach(w => {
-            w.webContents.send('socket:heartbeat', data)
-        })
-    })
-
     // Disconnection event
     socket.on('disconnect', (reason) => {
         BrowserWindow.getAllWindows().forEach(w => {
