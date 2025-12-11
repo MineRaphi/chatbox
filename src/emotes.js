@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchEmotes().then(() => {
         filteredEmotes = emotesCache; // default: show all
         renderEmotePanel();
+        renderFavoriteBar();
     });
 
     const chatInput = document.getElementById("chatInput");
@@ -186,24 +187,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
     chatInput.addEventListener("input", updateSuggestionBox);
 
+    //render the panel and the star thing
     function renderEmotePanel() {
         const grid = document.getElementById("emoteGrid");
-        if (!grid) return;
-
         grid.innerHTML = "";
 
         filteredEmotes.forEach(emote => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "relative";
+
             const img = document.createElement("img");
             img.src = emote.url;
             img.title = emote.name;
-
             img.className = "max-h-10 w-auto cursor-pointer hover:scale-110 transition";
+            img.onclick = () => send7tvEmote(emote.id);
 
-            img.addEventListener("click", () => {
-                send7tvEmote(emote.id);
-            });
+            const star = document.createElement("div");
+            star.innerHTML = "⭐";
+            star.className = "absolute top-0 right-0 text-yellow-400 cursor-pointer text-xs opacity-70 hover:opacity-100";
 
-            grid.appendChild(img);
+            star.onclick = (e) => {
+                e.stopPropagation();
+
+                if (!favoriteEmotes.some(f => f.id === emote.id)) {
+                    favoriteEmotes.unshift(emote);
+                    favoriteEmotes = favoriteEmotes.slice(0, 10); // only keep 10
+                    saveFavorites();
+                    renderFavoriteBar();
+                }
+            };
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(star);
+            grid.appendChild(wrapper);
         });
     }
 
@@ -219,5 +235,42 @@ document.addEventListener("DOMContentLoaded", () => {
         renderEmotePanel();
     });
 });
+
+
+//quick Select
+
+//Storage for the favourite Emotes
+let favoriteEmotes = JSON.parse(localStorage.getItem("favoriteEmotes") || "[]");
+
+//saving the Emote to the Storage
+function saveFavorites() {
+    localStorage.setItem("favoriteEmotes", JSON.stringify(favoriteEmotes));
+}
+
+//Render the Bar
+function renderFavoriteBar() {
+    const bar = document.getElementById("favoriteBar");
+    bar.innerHTML = "";
+
+    favoriteEmotes.slice(0, 10).forEach(fav => {
+        const img = document.createElement("img");
+        img.src = fav.url;
+        img.title = fav.name;
+
+        img.className = "h-12 w-auto cursor-pointer hover:scale-110 transition";
+
+        img.onclick = () => {
+            send7tvEmote(fav.id);
+        };
+        
+            img.oncontextmenu = (e) => {
+            e.preventDefault();
+            favoriteEmotes = favoriteEmotes.filter(f => f.id !== fav.id);
+            saveFavorites();
+            renderFavoriteBar();
+            };
+        bar.appendChild(img);
+    });
+}
 
 
