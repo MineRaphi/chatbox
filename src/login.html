@@ -19,7 +19,7 @@
         </script>
     </head> 
 
-    <body>
+    <body id="loginPage">
         <!--Loginpage-->
         <div class="titlebar self-start"></div>
         <div class="flex items-center justify-center min-h-screen bg-cover bg-center bg-gradient-to-br from-[var(--bg1)] to-[var(--bg2)]">
@@ -52,9 +52,13 @@
                             Register
                             </button>
 
-                            <button class="absolute object-bottom-left bottom-2 left-2 text-xs cursor-pointer" onclick="window.location.href='server.html'"><- Return to Server select</button>
+                            <button id="changeServerBtn" class="absolute object-bottom-left bottom-2 left-2 text-xs cursor-pointer"><- Return to Server select</button>
                         </div>
                         <div id="LogError" class="text-red-400 text-sm mt-3 hidden w-56 text-center mx-auto" role="alert" aria-live="polite">Wrong Username or Password, Please try again</div>
+                        <div>
+                            <input type="checkbox" id="autoLoginSelector" name="autoLoginSelector" />
+                            <label for="autoLoginSelector">Remember Me</label>
+                        </div>
                     </div>
                 </div>
                 <div class="absolute w-56 h-48 bg-white blur-[50px] -left-1/2 -top-1/2"></div>

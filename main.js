@@ -107,7 +107,7 @@ ipcMain.on('chat:sendMessage', (event, message) => {
     if (socket && socket.connected) {
         socket.emit('chatMessage', message);
     }
-})
+});
 
 // Load preferences and send them to the renderer
 ipcMain.on('preferences:load', (event) => {

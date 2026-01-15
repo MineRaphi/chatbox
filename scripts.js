@@ -29,12 +29,12 @@ if (window.electronSocket) {
             console.warn('Error clearing pending error:', e);
         }
 
-        window.location.href = "login.html";
-    })
-
-    // Log heartbeat messages from the main process
-    window.electronSocket.onHeartbeat((data) => {
-        console.log('heartbeat', data)
+        if (document.getElementById("startPage") != null) {
+            window.location.href = "src/login.html";
+        }
+        else {
+            window.location.href = "login.html";
+        }
     })
 
     // When the socket disconnects, log the reason
@@ -79,11 +79,18 @@ if (window.electronSocket) {
         document.getElementById("LoginError").style.display = "none";
     });
 
-    // Handle preferences loaded event by updating the UI with the loaded preferences
+    // Handle preferences loaded event
     window.electronSocket.onPreferencesLoaded((data) => {
         console.log("Preferences loaded:", data);
         // Update UI with loaded preferences
         setTheme(data.theme, false);
+        // Connect with Server automatically
+        if (document.getElementById("startPage") != null && data.serverIP != null && data.serverPort != null) {
+            window.electronSocket.tryServerConnect(data.serverIP, data.serverPort);
+        }
+        if (document.getElementById("loginPage") != null && data.username != null && data.password != null) {
+            window.electronSocket.login(data.username, data.password);
+        }
     });
 
     // Set up connect button event listener
@@ -92,6 +99,15 @@ if (window.electronSocket) {
         connectBtn.addEventListener("click", function() {
             const ip = document.getElementById("ip").value;
             const port = document.getElementById("port").value;
+            const stayConnected = document.getElementById("reconnectSelector").checked;
+            if (stayConnected) {
+                window.electronSocket.changePreference("serverIP", ip);
+                window.electronSocket.changePreference("serverPort", port);
+            }
+            else {
+                window.electronSocket.changePreference("serverIP", null);
+                window.electronSocket.changePreference("serverPort", null);
+            }
             window.electronSocket.tryServerConnect(ip, port);
         });
     }
@@ -130,8 +146,47 @@ if (window.electronSocket) {
         loginBtn.addEventListener("click", function() {
             const username = document.getElementById("username").value;
             const password = document.getElementById("password").value;
-            console.log("Logging in user:", username);
+            console.log("Logging in user:", username)
+            const stayLoggedin = document.getElementById("autoLoginSelector").checked;
+            if (stayLoggedin) {
+                window.electronSocket.changePreference("username", username);
+                window.electronSocket.changePreference("password", password);
+            }
+            else {
+                window.electronSocket.changePreference("username", null);
+                window.electronSocket.changePreference("password", null);
+            }
             window.electronSocket.login(username, password);
+        });
+    }
+
+    const changeServerBtn = document.getElementById("changeServerBtn");
+    if (changeServerBtn) {
+        changeServerBtn.addEventListener("click", function() {
+            window.electronSocket.changePreference("serverIP", null);
+            window.electronSocket.changePreference("serverPort", null);
+            window.location.href="server.html";
+        });
+    }
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", function() {
+            window.electronSocket.changePreference("username", null);
+            window.electronSocket.changePreference("password", null);
+            sleep(500);
+            window.location.href="login.html";
+        });
+    }
+
+    const logoutAndChangeServerBtn = document.getElementById("logoutAndChangeServerBtn");
+    if (logoutAndChangeServerBtn) {
+        logoutAndChangeServerBtn.addEventListener("click", function() {
+            window.electronSocket.changePreference("serverIP", null);
+            window.electronSocket.changePreference("serverPort", null);
+            window.electronSocket.changePreference("username", null);
+            window.electronSocket.changePreference("password", null);
+            window.location.href="server.html";
         });
     }
 }
