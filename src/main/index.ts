@@ -1,12 +1,18 @@
 import { app, ipcMain } from 'electron';
 import started from 'electron-squirrel-startup';
 import { IpcChannel, type AppInfo } from '../shared/ipc';
+import { initOverlays } from './overlay';
 import { showPicker } from './picker';
 import { createTray } from './tray';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
+}
+
+// Transparent overlay windows on Linux need this before the app is ready.
+if (process.platform === 'linux') {
+  app.commandLine.appendSwitch('enable-transparent-visuals');
 }
 
 // Only one instance: a second launch opens the picker of the running one.
@@ -30,5 +36,10 @@ if (!app.requestSingleInstanceLock()) {
     // Packaged builds hide the dock icon via LSUIElement; this covers dev runs.
     app.dock?.hide();
     createTray();
+
+    // Linux compositors need a moment after startup before transparent
+    // windows render correctly.
+    const overlayDelay = process.platform === 'linux' ? 500 : 0;
+    setTimeout(initOverlays, overlayDelay);
   });
 }
