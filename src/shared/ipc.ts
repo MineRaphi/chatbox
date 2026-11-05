@@ -8,6 +8,11 @@ export const IpcChannel = {
   SettingsChanged: 'settings:changed',
   GetStatus: 'connection:getStatus',
   StatusChanged: 'connection:status',
+  GetEmotes: 'emotes:get',
+  RefreshEmotes: 'emotes:refresh',
+  EmotesChanged: 'emotes:changed',
+  SendEmote: 'emotes:send',
+  PickerShown: 'picker:shown',
   OverlayShow: 'overlay:show',
 } as const;
 
@@ -32,6 +37,10 @@ export interface Settings {
   limitOnScreen: boolean;
   /** Accept at most 10 incoming emotes per 10 seconds. */
   limitRate: boolean;
+  /** 7TV emote set IDs to load; `global` is 7TV's global set. */
+  emoteSets: string[];
+  /** Electron accelerator that opens the picker, e.g. `CommandOrControl+Shift+E`. */
+  hotkey: string;
 }
 
 export type SettingKey = keyof Settings;
@@ -50,6 +59,20 @@ export interface ConnectionStatus {
   error: string | null;
 }
 
+export interface Emote {
+  id: string;
+  name: string;
+  animated: boolean;
+}
+
+export interface EmoteList {
+  emotes: Emote[];
+  /** Set when the last refresh failed; `emotes` may still hold cached data. */
+  error: string | null;
+  /** True while a refresh from 7TV is in flight. */
+  loading: boolean;
+}
+
 /** One emote to show in an overlay window. */
 export interface OverlayEmote {
   url: string;
@@ -59,7 +82,11 @@ export interface OverlayEmote {
   limitOnScreen: boolean;
 }
 
-/** API exposed to the picker renderer as `window.chatbox`. */
+/**
+ * API exposed to the picker renderer as `window.chatbox`.
+ * Callbacks must return nothing: the context bridge copies return values,
+ * and Svelte state proxies can't be copied.
+ */
 export interface PickerApi {
   getAppInfo(): Promise<AppInfo>;
   getSettings(): Promise<Settings>;
@@ -71,6 +98,18 @@ export interface PickerApi {
   onSettingsChanged(callback: (settings: Settings) => void): void;
   getStatus(): Promise<ConnectionStatus>;
   onStatus(callback: (status: ConnectionStatus) => void): void;
+  getEmotes(): Promise<EmoteList>;
+  refreshEmotes(): Promise<void>;
+  onEmotesChanged(callback: (list: EmoteList) => void): void;
+  /** Send to the server and show locally. Resolves false for an invalid ID. */
+  sendEmote(emoteId: string): Promise<boolean>;
+  /** Fires every time the picker window is shown. */
+  onShown(callback: () => void): void;
+}
+
+/** CDN URL for an emote image at 1x to 4x resolution. */
+export function emoteUrl(id: string, scale: 1 | 2 | 3 | 4): string {
+  return `https://cdn.7tv.app/emote/${id}/${scale}x.webp`;
 }
 
 /** API exposed to overlay renderers as `window.overlay`. Receive only. */

@@ -1,6 +1,8 @@
-import { app } from 'electron';
+import { app, globalShortcut } from 'electron';
 import started from 'electron-squirrel-startup';
 import { initConnection } from './connection';
+import { initEmotes } from './emotes';
+import { initHotkey } from './hotkey';
 import { registerIpc } from './ipc';
 import { initOverlays } from './overlay';
 import { initPicker, showPicker } from './picker';
@@ -11,9 +13,11 @@ if (started) {
   app.quit();
 }
 
-// Transparent overlay windows on Linux need this before the app is ready.
 if (process.platform === 'linux') {
+  // Transparent overlay windows need this before the app is ready.
   app.commandLine.appendSwitch('enable-transparent-visuals');
+  // Global shortcuts on Wayland go through the desktop portal.
+  app.commandLine.appendSwitch('enable-features', 'GlobalShortcutsPortal');
 }
 
 // Only one instance: a second launch opens the picker of the running one.
@@ -39,5 +43,9 @@ if (!app.requestSingleInstanceLock()) {
 
     initConnection();
     initPicker();
+    initHotkey();
+    void initEmotes();
   });
+
+  app.on('will-quit', () => globalShortcut.unregisterAll());
 }

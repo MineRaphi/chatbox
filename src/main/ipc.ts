@@ -1,6 +1,7 @@
 import { app, ipcMain } from 'electron';
 import { IpcChannel, type AppInfo } from '../shared/ipc';
-import { getStatus } from './connection';
+import { getStatus, sendEmote } from './connection';
+import { getEmotes, refreshEmotes } from './emotes';
 import { getSettings, isSettingKey, setSetting } from './store';
 
 /** Handlers for requests coming from renderers. Push events are sent elsewhere. */
@@ -19,4 +20,12 @@ export function registerIpc(): void {
   );
 
   ipcMain.handle(IpcChannel.GetStatus, () => getStatus());
+
+  ipcMain.handle(IpcChannel.GetEmotes, () => getEmotes());
+
+  ipcMain.handle(IpcChannel.RefreshEmotes, () => refreshEmotes(true));
+
+  ipcMain.handle(IpcChannel.SendEmote, (_event, emoteId: unknown) =>
+    typeof emoteId === 'string' ? sendEmote(emoteId) : false,
+  );
 }

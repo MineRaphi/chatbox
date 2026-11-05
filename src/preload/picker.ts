@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 import {
   IpcChannel,
   type ConnectionStatus,
+  type EmoteList,
   type PickerApi,
   type Settings,
 } from '../shared/ipc';
@@ -22,6 +23,17 @@ const api: PickerApi = {
       IpcChannel.StatusChanged,
       (_event, status: ConnectionStatus) => callback(status),
     );
+  },
+  getEmotes: () => ipcRenderer.invoke(IpcChannel.GetEmotes),
+  refreshEmotes: () => ipcRenderer.invoke(IpcChannel.RefreshEmotes),
+  onEmotesChanged: (callback) => {
+    ipcRenderer.on(IpcChannel.EmotesChanged, (_event, list: EmoteList) =>
+      callback(list),
+    );
+  },
+  sendEmote: (emoteId) => ipcRenderer.invoke(IpcChannel.SendEmote, emoteId),
+  onShown: (callback) => {
+    ipcRenderer.on(IpcChannel.PickerShown, () => callback());
   },
 };
 

@@ -7,6 +7,7 @@ import {
 } from 'electron';
 import type { ConnectionStatus } from '../shared/ipc';
 import { getStatus, onStatus, sendEmote } from './connection';
+import { getHotkey, onHotkeyChange } from './hotkey';
 import { showEmote } from './overlay';
 import { assetPath } from './paths';
 import { showPicker } from './picker';
@@ -100,7 +101,14 @@ function updateMenu(status: ConnectionStatus): void {
   tray.setToolTip(`Chatbox: ${statusLabel(status)}`);
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: 'Open picker', click: () => showPicker() },
+      {
+        label: 'Open picker',
+        click: () => showPicker(),
+        // Display the global hotkey; it's registered separately.
+        ...(getHotkey()
+          ? { accelerator: getHotkey()!, registerAccelerator: false }
+          : {}),
+      },
       { type: 'separator' },
       { label: statusLabel(status), enabled: false },
       { type: 'separator' },
@@ -117,6 +125,7 @@ export function createTray(): Tray {
 
   updateMenu(getStatus());
   onStatus(updateMenu);
+  onHotkeyChange(() => updateMenu(getStatus()));
 
   // Windows/Linux users expect a left click on the tray icon to open the app.
   if (process.platform !== 'darwin') {

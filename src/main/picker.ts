@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { BrowserWindow, app, screen } from 'electron';
+import { IpcChannel } from '../shared/ipc';
 
 const WIDTH = 360;
 const HEIGHT = 420;
@@ -84,11 +85,16 @@ function createPicker(): BrowserWindow {
 
   // In dev, surface renderer errors in the terminal.
   if (!app.isPackaged) {
-    win.webContents.on('console-message', ({ level, message }) => {
-      if (level === 'error' || level === 'warning') {
-        console.warn(`[picker:${level}] ${message}`);
-      }
-    });
+    win.webContents.on(
+      'console-message',
+      ({ level, message, sourceId, lineNumber }) => {
+        if (level === 'error' || level === 'warning') {
+          console.warn(
+            `[picker:${level}] ${message} (${sourceId}:${lineNumber})`,
+          );
+        }
+      },
+    );
   }
 
   load(win);
@@ -109,6 +115,7 @@ function present(win: BrowserWindow): void {
   if (process.platform === 'darwin') app.focus({ steal: true });
   win.show();
   win.focus();
+  win.webContents.send(IpcChannel.PickerShown);
 }
 
 /** Create the picker hidden at startup so it is loaded before first use. */
@@ -123,5 +130,14 @@ export function showPicker(): void {
     present(picker);
   } else {
     showWhenLoaded = true;
+  }
+}
+
+/** Hotkey behaviour: open the picker, or close it if it's already in front. */
+export function togglePicker(): void {
+  if (picker?.isVisible() && picker.isFocused()) {
+    picker.hide();
+  } else {
+    showPicker();
   }
 }

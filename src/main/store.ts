@@ -18,10 +18,16 @@ const DEFAULTS: Settings = {
   overlayMonitor: 'primary',
   limitOnScreen: false,
   limitRate: false,
+  emoteSets: ['global'],
+  hotkey: 'CommandOrControl+Shift+E',
 };
 
 const MONITORS: readonly MonitorTarget[] = ['primary', 'all', 'cursor'];
 const HOST = /^[A-Za-z0-9.-]{0,253}$/;
+const SET_ID = /^(global|[0-9A-Z]{26})$/;
+// Modifiers and a key joined by `+`; Electron validates the rest on register.
+const HOTKEY = /^[A-Za-z0-9+]{1,64}$/;
+const MAX_SETS = 10;
 
 const isInt = (v: unknown, min: number, max: number): v is number =>
   Number.isInteger(v) && (v as number) >= min && (v as number) <= max;
@@ -39,6 +45,11 @@ const VALIDATORS: { [K in SettingKey]: (v: unknown) => boolean } = {
   overlayMonitor: (v) => MONITORS.includes(v as MonitorTarget),
   limitOnScreen: (v) => typeof v === 'boolean',
   limitRate: (v) => typeof v === 'boolean',
+  emoteSets: (v) =>
+    Array.isArray(v) &&
+    v.length <= MAX_SETS &&
+    v.every((id) => typeof id === 'string' && SET_ID.test(id)),
+  hotkey: (v) => typeof v === 'string' && HOTKEY.test(v),
 };
 
 let store: Store<Settings> | null = null;
