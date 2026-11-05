@@ -4,6 +4,7 @@ import {
   app,
   nativeImage,
   type MenuItemConstructorOptions,
+  type NativeImage,
 } from 'electron';
 import type { ConnectionStatus } from '../shared/ipc';
 import { getStatus, onStatus, sendEmote } from './connection';
@@ -11,6 +12,7 @@ import { getHotkey, onHotkeyChange } from './hotkey';
 import { showEmote } from './overlay';
 import { assetPath } from './paths';
 import { showPicker } from './picker';
+import { getSetting, onSettingChange, setSetting } from './store';
 
 // A few 7TV global emotes for the dev-only test menu.
 const TEST_EMOTES = [
@@ -22,6 +24,8 @@ const TEST_EMOTES = [
 ];
 
 let tray: Tray | null = null;
+let icon: NativeImage;
+let dimmedIcon: NativeImage;
 
 function randomTestEmote(): string {
   return TEST_EMOTES[Math.floor(Math.random() * TEST_EMOTES.length)]!;
@@ -37,6 +41,7 @@ function sendBurst(count: number): void {
 function debugMenu(): MenuItemConstructorOptions[] {
   if (app.isPackaged) return [];
   return [
+    { type: 'separator' },
     {
       label: 'Debug',
       submenu: [
@@ -79,7 +84,6 @@ function debugMenu(): MenuItemConstructorOptions[] {
         },
       ],
     },
-    { type: 'separator' },
   ];
 }
 
@@ -96,23 +100,54 @@ function statusLabel({ state, address }: ConnectionStatus): string {
   }
 }
 
-function updateMenu(status: ConnectionStatus): void {
+/** The same icon at reduced opacity, for Do not disturb. */
+function dim(image: NativeImage): NativeImage {
+  const out = nativeImage.createEmpty();
+  for (const scaleFactor of image.getScaleFactors()) {
+    const { width, height } = image.getSize(scaleFactor);
+    const pixels = Buffer.from(image.toBitmap({ scaleFactor }));
+    // Bitmaps are 4 bytes per pixel with alpha last; halve the alpha.
+    for (let i = 3; i < pixels.length; i += 4) pixels[i] = pixels[i]! >> 1;
+    out.addRepresentation({
+      scaleFactor,
+      buffer: pixels,
+      width: Math.round(width * scaleFactor),
+      height: Math.round(height * scaleFactor),
+    });
+  }
+  return out;
+}
+
+function updateMenu(): void {
   if (!tray) return;
-  tray.setToolTip(`Chatbox: ${statusLabel(status)}`);
+  const status = getStatus();
+  const dnd = getSetting('doNotDisturb');
+  const hotkey = getHotkey();
+
+  tray.setImage(dnd ? dimmedIcon : icon);
+  tray.setToolTip(
+    `Chatbox: ${statusLabel(status)}${dnd ? ' (Do not disturb)' : ''}`,
+  );
   tray.setContextMenu(
     Menu.buildFromTemplate([
       {
         label: 'Open picker',
         click: () => showPicker(),
         // Display the global hotkey; it's registered separately.
-        ...(getHotkey()
-          ? { accelerator: getHotkey()!, registerAccelerator: false }
-          : {}),
+        ...(hotkey ? { accelerator: hotkey, registerAccelerator: false } : {}),
       },
       { type: 'separator' },
       { label: statusLabel(status), enabled: false },
+      {
+        label: 'Do not disturb',
+        type: 'checkbox',
+        checked: dnd,
+        click: (item) => setSetting('doNotDisturb', item.checked),
+      },
       { type: 'separator' },
+      { label: 'Settings…', click: () => showPicker('settings') },
       ...debugMenu(),
+      { type: 'separator' },
       { label: 'Quit Chatbox', role: 'quit' },
     ]),
   );
@@ -120,12 +155,16 @@ function updateMenu(status: ConnectionStatus): void {
 
 export function createTray(): Tray {
   // nativeImage picks up tray@2x.png automatically on high-DPI displays.
-  const icon = nativeImage.createFromPath(assetPath('tray.png'));
+  icon = nativeImage.createFromPath(assetPath('tray.png'));
+  dimmedIcon = dim(icon);
   tray = new Tray(icon);
 
-  updateMenu(getStatus());
+  updateMenu();
   onStatus(updateMenu);
-  onHotkeyChange(() => updateMenu(getStatus()));
+  onHotkeyChange(updateMenu);
+  onSettingChange((key) => {
+    if (key === 'doNotDisturb') updateMenu();
+  });
 
   // Windows/Linux users expect a left click on the tray icon to open the app.
   if (process.platform !== 'darwin') {

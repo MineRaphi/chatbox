@@ -3,6 +3,7 @@ import { BrowserWindow } from 'electron';
 import Store from 'electron-store';
 import {
   IpcChannel,
+  MAX_FAVORITES,
   type MonitorTarget,
   type SettingKey,
   type Settings,
@@ -20,6 +21,9 @@ const DEFAULTS: Settings = {
   limitRate: false,
   emoteSets: ['global'],
   hotkey: 'CommandOrControl+Shift+E',
+  favorites: [],
+  doNotDisturb: false,
+  launchAtLogin: false,
 };
 
 const MONITORS: readonly MonitorTarget[] = ['primary', 'all', 'cursor'];
@@ -28,6 +32,19 @@ const SET_ID = /^(global|[0-9A-Z]{26})$/;
 // Modifiers and a key joined by `+`; Electron validates the rest on register.
 const HOTKEY = /^[A-Za-z0-9+]{1,64}$/;
 const MAX_SETS = 10;
+const EMOTE_ID = /^[0-9A-Z]{26}$/;
+
+/** A stored emote: valid 7TV ID, a short name, an animated flag. */
+export function isStoredEmote(v: unknown): boolean {
+  const e = v as { id?: unknown; name?: unknown; animated?: unknown } | null;
+  return (
+    typeof e?.id === 'string' &&
+    EMOTE_ID.test(e.id) &&
+    isText(e.name, 100) &&
+    e.name !== '' &&
+    typeof e.animated === 'boolean'
+  );
+}
 
 const isInt = (v: unknown, min: number, max: number): v is number =>
   Number.isInteger(v) && (v as number) >= min && (v as number) <= max;
@@ -50,6 +67,10 @@ const VALIDATORS: { [K in SettingKey]: (v: unknown) => boolean } = {
     v.length <= MAX_SETS &&
     v.every((id) => typeof id === 'string' && SET_ID.test(id)),
   hotkey: (v) => typeof v === 'string' && HOTKEY.test(v),
+  favorites: (v) =>
+    Array.isArray(v) && v.length <= MAX_FAVORITES && v.every(isStoredEmote),
+  doNotDisturb: (v) => typeof v === 'boolean',
+  launchAtLogin: (v) => typeof v === 'boolean',
 };
 
 let store: Store<Settings> | null = null;

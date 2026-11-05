@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { BrowserWindow, app, screen } from 'electron';
-import { IpcChannel } from '../shared/ipc';
+import { IpcChannel, type PickerView } from '../shared/ipc';
 
 const WIDTH = 360;
 const HEIGHT = 420;
@@ -8,7 +8,7 @@ const RELOAD_DELAY_MS = 1_000;
 
 let picker: BrowserWindow | null = null;
 let loaded = false;
-let showWhenLoaded = false;
+let showWhenLoaded: PickerView | null = null;
 
 function load(win: BrowserWindow): void {
   loaded = false;
@@ -64,8 +64,9 @@ function createPicker(): BrowserWindow {
   win.webContents.on('did-finish-load', () => {
     loaded = true;
     if (showWhenLoaded) {
-      showWhenLoaded = false;
-      present(win);
+      const view = showWhenLoaded;
+      showWhenLoaded = null;
+      present(win, view);
     }
   });
 
@@ -101,7 +102,7 @@ function createPicker(): BrowserWindow {
   return win;
 }
 
-function present(win: BrowserWindow): void {
+function present(win: BrowserWindow, view: PickerView): void {
   const { workArea } = screen.getDisplayNearestPoint(
     screen.getCursorScreenPoint(),
   );
@@ -115,7 +116,7 @@ function present(win: BrowserWindow): void {
   if (process.platform === 'darwin') app.focus({ steal: true });
   win.show();
   win.focus();
-  win.webContents.send(IpcChannel.PickerShown);
+  win.webContents.send(IpcChannel.PickerShown, view);
 }
 
 /** Create the picker hidden at startup so it is loaded before first use. */
@@ -124,12 +125,12 @@ export function initPicker(): void {
 }
 
 /** Show the picker centered on the display the cursor is on. */
-export function showPicker(): void {
+export function showPicker(view: PickerView = 'picker'): void {
   picker ??= createPicker();
   if (loaded) {
-    present(picker);
+    present(picker, view);
   } else {
-    showWhenLoaded = true;
+    showWhenLoaded = view;
   }
 }
 

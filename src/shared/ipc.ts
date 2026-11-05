@@ -12,6 +12,10 @@ export const IpcChannel = {
   RefreshEmotes: 'emotes:refresh',
   EmotesChanged: 'emotes:changed',
   SendEmote: 'emotes:send',
+  ToggleFavorite: 'favorites:toggle',
+  GetHotkey: 'hotkey:get',
+  HotkeyChanged: 'hotkey:changed',
+  SetHotkeyRecording: 'hotkey:recording',
   PickerShown: 'picker:shown',
   OverlayShow: 'overlay:show',
 } as const;
@@ -41,7 +45,19 @@ export interface Settings {
   emoteSets: string[];
   /** Electron accelerator that opens the picker, e.g. `CommandOrControl+Shift+E`. */
   hotkey: string;
+  /** Pinned emotes, newest first, at most MAX_FAVORITES. */
+  favorites: Emote[];
+  /** Drop incoming emotes (your own previews still show). */
+  doNotDisturb: boolean;
+  launchAtLogin: boolean;
 }
+
+export const MAX_FAVORITES = 10;
+
+/** Which view the picker opens on. */
+export type PickerView = 'picker' | 'settings';
+
+export type FavoriteResult = 'added' | 'removed' | 'full' | 'invalid';
 
 export type SettingKey = keyof Settings;
 
@@ -103,8 +119,15 @@ export interface PickerApi {
   onEmotesChanged(callback: (list: EmoteList) => void): void;
   /** Send to the server and show locally. Resolves false for an invalid ID. */
   sendEmote(emoteId: string): Promise<boolean>;
-  /** Fires every time the picker window is shown. */
-  onShown(callback: () => void): void;
+  /** Add or remove a favorite. Adding to a full list returns `full`. */
+  toggleFavorite(emote: Emote): Promise<FavoriteResult>;
+  /** The hotkey that is actually registered, or null if registering failed. */
+  getHotkey(): Promise<string | null>;
+  onHotkeyChanged(callback: (hotkey: string | null) => void): void;
+  /** Pause the global hotkey while the user records a new one. */
+  setHotkeyRecording(recording: boolean): Promise<void>;
+  /** Fires every time the picker window is shown, with the view to open. */
+  onShown(callback: (view: PickerView) => void): void;
 }
 
 /** CDN URL for an emote image at 1x to 4x resolution. */

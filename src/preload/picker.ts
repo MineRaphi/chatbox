@@ -4,6 +4,7 @@ import {
   type ConnectionStatus,
   type EmoteList,
   type PickerApi,
+  type PickerView,
   type Settings,
 } from '../shared/ipc';
 
@@ -32,8 +33,20 @@ const api: PickerApi = {
     );
   },
   sendEmote: (emoteId) => ipcRenderer.invoke(IpcChannel.SendEmote, emoteId),
+  toggleFavorite: (emote) =>
+    ipcRenderer.invoke(IpcChannel.ToggleFavorite, emote),
+  getHotkey: () => ipcRenderer.invoke(IpcChannel.GetHotkey),
+  onHotkeyChanged: (callback) => {
+    ipcRenderer.on(IpcChannel.HotkeyChanged, (_event, hotkey: string | null) =>
+      callback(hotkey),
+    );
+  },
+  setHotkeyRecording: (recording) =>
+    ipcRenderer.invoke(IpcChannel.SetHotkeyRecording, recording),
   onShown: (callback) => {
-    ipcRenderer.on(IpcChannel.PickerShown, () => callback());
+    ipcRenderer.on(IpcChannel.PickerShown, (_event, view: PickerView) =>
+      callback(view),
+    );
   },
 };
 

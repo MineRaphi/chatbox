@@ -1,11 +1,13 @@
 import { app, globalShortcut } from 'electron';
 import started from 'electron-squirrel-startup';
+import { initAutostart } from './autostart';
 import { initConnection } from './connection';
 import { initEmotes } from './emotes';
 import { initHotkey } from './hotkey';
 import { registerIpc } from './ipc';
 import { initOverlays } from './overlay';
 import { initPicker, showPicker } from './picker';
+import { getSetting } from './store';
 import { createTray } from './tray';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -44,7 +46,11 @@ if (!app.requestSingleInstanceLock()) {
     initConnection();
     initPicker();
     initHotkey();
+    initAutostart();
     void initEmotes();
+
+    // First run: there's no window to find, so open setup right away.
+    if (!getSetting('serverHost')) showPicker('settings');
   });
 
   app.on('will-quit', () => globalShortcut.unregisterAll());

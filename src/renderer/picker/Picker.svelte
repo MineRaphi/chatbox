@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import {
+    MAX_FAVORITES,
     emoteUrl,
     type ConnectionStatus,
     type Emote,
@@ -11,19 +12,44 @@
   interface Props {
     list: EmoteList | null;
     status: ConnectionStatus | null;
+    favorites: Emote[];
     shownCount: number;
     onOpenSettings: () => void;
   }
-  const { list, status, shownCount, onOpenSettings }: Props = $props();
+  const { list, status, favorites, shownCount, onOpenSettings }: Props =
+    $props();
 
   const COLS = 6;
   const FLASH_MS = 400;
+  const NOTICE_MS = 2_500;
 
   let query = $state('');
   let selected = $state(0);
   let flashId = $state<string | null>(null);
   let searchEl = $state<HTMLInputElement>();
   let gridEl = $state<HTMLElement>();
+  let notice = $state('');
+  let noticeTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const favoriteIds = $derived(new Set(favorites.map((f) => f.id)));
+
+  function showNotice(text: string): void {
+    notice = text;
+    clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(() => (notice = ''), NOTICE_MS);
+  }
+
+  async function toggleFavorite(emote: Emote): Promise<void> {
+    // Send a plain copy: Svelte state proxies can't cross the context bridge.
+    const result = await window.chatbox.toggleFavorite({
+      id: emote.id,
+      name: emote.name,
+      animated: emote.animated,
+    });
+    if (result === 'full') {
+      showNotice(`Favorites are full (${MAX_FAVORITES}). Right-click one to remove it.`);
+    }
+  }
 
   /** Exact match first, then names starting with the query, then the rest. */
   const results = $derived.by((): Emote[] => {
@@ -122,6 +148,33 @@
   </button>
 </header>
 
+<div
+  class="flex h-12 shrink-0 items-center gap-1 overflow-x-auto border-b border-zinc-800 px-3"
+  aria-label="Favorites"
+>
+  {#each favorites as fav (fav.id)}
+    <button
+      class="flex size-9 shrink-0 items-center justify-center rounded-md hover:bg-zinc-800
+        {flashId === fav.id ? 'ring-2 ring-emerald-400' : ''}"
+      title="{fav.name} (right-click to unpin)"
+      onclick={() => send(fav)}
+      oncontextmenu={(e) => {
+        e.preventDefault();
+        void toggleFavorite(fav);
+      }}
+    >
+      <img
+        src={emoteUrl(fav.id, 2)}
+        alt={fav.name}
+        class="max-h-7 max-w-7 object-contain"
+        draggable="false"
+      />
+    </button>
+  {:else}
+    <p class="text-xs text-zinc-500">Star an emote to pin it here.</p>
+  {/each}
+</div>
+
 <section class="min-h-0 flex-1 overflow-y-auto p-3" bind:this={gridEl}>
   {#if !list || (list.loading && !list.emotes.length)}
     <p class="mt-16 text-center text-sm text-zinc-500">Loading emotes…</p>
@@ -142,25 +195,45 @@
   {:else}
     <div class="grid grid-cols-6 gap-1" role="listbox" aria-label="Emotes">
       {#each results as emote, i (emote.id)}
-        <button
-          data-index={i}
-          role="option"
-          aria-selected={i === selected}
-          title={emote.name}
-          class="flex aspect-square items-center justify-center rounded-md transition-colors
-            {i === selected ? 'bg-zinc-700' : 'hover:bg-zinc-800'}
-            {flashId === emote.id ? 'ring-2 ring-emerald-400' : ''}"
-          onclick={() => send(emote)}
-          onmouseenter={() => (selected = i)}
-        >
-          <img
-            src={emoteUrl(emote.id, 2)}
-            alt={emote.name}
-            class="max-h-9 max-w-9 object-contain"
-            loading="lazy"
-            draggable="false"
-          />
-        </button>
+        {@const pinned = favoriteIds.has(emote.id)}
+        <div class="group relative" role="presentation" onmouseenter={() => (selected = i)}>
+          <button
+            data-index={i}
+            role="option"
+            aria-selected={i === selected}
+            title={emote.name}
+            class="flex aspect-square w-full items-center justify-center rounded-md transition-colors
+              {i === selected ? 'bg-zinc-700' : 'hover:bg-zinc-800'}
+              {flashId === emote.id ? 'ring-2 ring-emerald-400' : ''}"
+            onclick={() => send(emote)}
+          >
+            <img
+              src={emoteUrl(emote.id, 2)}
+              alt={emote.name}
+              class="max-h-9 max-w-9 object-contain"
+              loading="lazy"
+              draggable="false"
+            />
+          </button>
+          <button
+            class="absolute top-0 right-0 rounded p-0.5 transition-opacity
+              {pinned
+              ? 'text-amber-400 opacity-100'
+              : 'text-zinc-300 opacity-0 group-hover:opacity-100 hover:text-amber-300'}"
+            aria-label={pinned ? `Unpin ${emote.name}` : `Pin ${emote.name}`}
+            title={pinned ? 'Unpin' : 'Pin to favorites'}
+            onclick={() => toggleFavorite(emote)}
+          >
+            <!-- Star from Heroicons (MIT), 16px solid set -->
+            <svg viewBox="0 0 16 16" fill="currentColor" class="size-3" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                d="M8 1.75a.75.75 0 0 1 .692.462l1.41 3.393 3.664.293a.75.75 0 0 1 .428 1.317l-2.791 2.39.853 3.575a.75.75 0 0 1-1.12.814L7.998 12.08l-3.135 1.915a.75.75 0 0 1-1.12-.814l.852-3.574-2.79-2.39a.75.75 0 0 1 .427-1.318l3.663-.293 1.41-3.393A.75.75 0 0 1 8 1.75Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
       {/each}
     </div>
   {/if}
@@ -176,5 +249,9 @@
   >
     <StatusDot {status} />
   </button>
-  <span class="truncate text-zinc-300">{current?.name ?? ''}</span>
+  {#if notice}
+    <span class="truncate text-amber-400">{notice}</span>
+  {:else}
+    <span class="truncate text-zinc-300">{current?.name ?? ''}</span>
+  {/if}
 </footer>

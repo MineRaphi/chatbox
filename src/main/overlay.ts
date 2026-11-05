@@ -128,8 +128,9 @@ export function initOverlays(): void {
 
 /**
  * Show an emote on the target displays.
- * `remote` emotes come from other people and are validated and rate limited;
- * local previews of your own sends are not.
+ * `remote` emotes come from other people: they are dropped during Do not
+ * disturb and count toward the rate limit. Local previews of your own sends
+ * always show.
  */
 export function isEmoteId(value: unknown): value is string {
   return typeof value === 'string' && EMOTE_ID.test(value);
@@ -138,6 +139,7 @@ export function isEmoteId(value: unknown): value is string {
 export function showEmote(emoteId: unknown, remote: boolean): boolean {
   if (!isEmoteId(emoteId)) return false;
   const settings = getSettings();
+  if (remote && settings.doNotDisturb) return false;
   if (remote && settings.limitRate && !withinRateLimit(Date.now())) {
     return false;
   }

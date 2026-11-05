@@ -33,14 +33,20 @@ function publish(next: Partial<EmoteList>): void {
   }
 }
 
-/** Merge the configured sets in order; the first emote with a name wins. */
+/**
+ * Merge the configured sets in order. The first emote wins on both name and
+ * ID: sets often contain the same emote (same ID) under a different alias,
+ * and the picker keys its grid by ID, so duplicates would break rendering.
+ */
 function combine(): Emote[] {
-  const seen = new Set<string>();
+  const seenNames = new Set<string>();
+  const seenIds = new Set<string>();
   const out: Emote[] = [];
   for (const setId of getSettings().emoteSets) {
     for (const emote of cache.sets[setId]?.emotes ?? []) {
-      if (seen.has(emote.name)) continue;
-      seen.add(emote.name);
+      if (seenNames.has(emote.name) || seenIds.has(emote.id)) continue;
+      seenNames.add(emote.name);
+      seenIds.add(emote.id);
       out.push(emote);
     }
   }

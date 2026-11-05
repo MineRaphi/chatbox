@@ -1,9 +1,14 @@
 @import 'tailwindcss';
 
+/* The window itself never scrolls; the grid and settings list scroll inside
+   it. Every level down to <main> needs a definite height for that to work.
+   `clip` (unlike `hidden`) also blocks scrolling done by code, e.g. the
+   browser scrolling a focused element into view. */
 html,
-body {
+body,
+#app {
   margin: 0;
   height: 100%;
-  overflow: hidden;
+  overflow: clip;
   user-select: none;
 }
