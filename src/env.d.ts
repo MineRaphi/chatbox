@@ -1,0 +1,7 @@
+/// <reference types="@electron-forge/plugin-vite/forge-vite-env" />
+/// <reference types="svelte" />
+/// <reference types="vite/client" />
+
+// Injected by Forge's Vite plugin for the `picker` renderer (see forge.config.mts).
+declare const PICKER_VITE_DEV_SERVER_URL: string | undefined;
+declare const PICKER_VITE_NAME: string;
