@@ -1,8 +1,9 @@
-import { app, ipcMain } from 'electron';
+import { app } from 'electron';
 import started from 'electron-squirrel-startup';
-import { IpcChannel, type AppInfo } from '../shared/ipc';
+import { initConnection } from './connection';
+import { registerIpc } from './ipc';
 import { initOverlays } from './overlay';
-import { showPicker } from './picker';
+import { initPicker, showPicker } from './picker';
 import { createTray } from './tray';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -24,13 +25,7 @@ if (!app.requestSingleInstanceLock()) {
   // Tray app: closing every window must not quit.
   app.on('window-all-closed', () => {});
 
-  ipcMain.handle(
-    IpcChannel.GetAppInfo,
-    (): AppInfo => ({
-      version: app.getVersion(),
-      platform: process.platform,
-    }),
-  );
+  registerIpc();
 
   void app.whenReady().then(() => {
     // Packaged builds hide the dock icon via LSUIElement; this covers dev runs.
@@ -41,5 +36,8 @@ if (!app.requestSingleInstanceLock()) {
     // windows render correctly.
     const overlayDelay = process.platform === 'linux' ? 500 : 0;
     setTimeout(initOverlays, overlayDelay);
+
+    initConnection();
+    initPicker();
   });
 }

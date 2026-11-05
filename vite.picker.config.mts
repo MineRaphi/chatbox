@@ -8,6 +8,9 @@ const root = path.resolve(import.meta.dirname, 'src/renderer/picker');
 // https://vitejs.dev/config
 export default defineConfig({
   root,
+  // Each renderer runs its own dev server; a shared dependency cache makes
+  // them overwrite each other's optimized deps (blank picker in dev).
+  cacheDir: path.resolve(import.meta.dirname, 'node_modules/.vite/picker'),
   plugins: [
     svelte({
       configFile: path.resolve(import.meta.dirname, 'svelte.config.mjs'),

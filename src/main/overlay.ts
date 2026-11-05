@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { BrowserWindow, screen, type Display } from 'electron';
 import { IpcChannel, type OverlayEmote } from '../shared/ipc';
+import { getSettings } from './store';
 
 // 7TV emote IDs are ULIDs: 26 uppercase base32 characters.
 const EMOTE_ID = /^[0-9A-Z]{26}$/;
@@ -8,18 +9,6 @@ const EMOTE_ID = /^[0-9A-Z]{26}$/;
 // Receive cap: at most this many remote emotes per window of time.
 const RATE_LIMIT = 10;
 const RATE_WINDOW_MS = 10_000;
-
-type MonitorTarget = 'primary' | 'all' | 'cursor';
-
-// Settings arrive in milestone 5 (store.ts); until then these are the
-// defaults. Each limit can be switched off on its own.
-const settings = {
-  sizePx: 300,
-  durationMs: 3_500,
-  monitor: 'primary' as MonitorTarget,
-  limitOnScreen: true,
-  limitRate: true,
-};
 
 interface OverlayWindow {
   win: BrowserWindow;
@@ -111,7 +100,7 @@ function syncDisplays(): void {
 }
 
 function targetDisplays(): Display[] {
-  switch (settings.monitor) {
+  switch (getSettings().overlayMonitor) {
     case 'all':
       return screen.getAllDisplays();
     case 'cursor':
@@ -142,16 +131,21 @@ export function initOverlays(): void {
  * `remote` emotes come from other people and are validated and rate limited;
  * local previews of your own sends are not.
  */
+export function isEmoteId(value: unknown): value is string {
+  return typeof value === 'string' && EMOTE_ID.test(value);
+}
+
 export function showEmote(emoteId: unknown, remote: boolean): boolean {
-  if (typeof emoteId !== 'string' || !EMOTE_ID.test(emoteId)) return false;
+  if (!isEmoteId(emoteId)) return false;
+  const settings = getSettings();
   if (remote && settings.limitRate && !withinRateLimit(Date.now())) {
     return false;
   }
 
   const emote: OverlayEmote = {
     url: `https://cdn.7tv.app/emote/${emoteId}/4x.webp`,
-    sizePx: settings.sizePx,
-    durationMs: settings.durationMs,
+    sizePx: settings.overlaySizePx,
+    durationMs: settings.overlayDurationMs,
     limitOnScreen: settings.limitOnScreen,
   };
 

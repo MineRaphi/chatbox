@@ -5,6 +5,8 @@ import {
   nativeImage,
   type MenuItemConstructorOptions,
 } from 'electron';
+import type { ConnectionStatus } from '../shared/ipc';
+import { getStatus, onStatus, sendEmote } from './connection';
 import { showEmote } from './overlay';
 import { assetPath } from './paths';
 import { showPicker } from './picker';
@@ -24,6 +26,13 @@ function randomTestEmote(): string {
   return TEST_EMOTES[Math.floor(Math.random() * TEST_EMOTES.length)]!;
 }
 
+/** Send `count` random test emotes through the server, 150 ms apart. */
+function sendBurst(count: number): void {
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => sendEmote(randomTestEmote()), i * 150);
+  }
+}
+
 function debugMenu(): MenuItemConstructorOptions[] {
   if (app.isPackaged) return [];
   return [
@@ -34,6 +43,19 @@ function debugMenu(): MenuItemConstructorOptions[] {
           label: 'Show test emote (local)',
           click: () => showEmote(randomTestEmote(), false),
         },
+        {
+          label: 'Send test emote to server',
+          click: () => sendEmote(randomTestEmote()),
+        },
+        {
+          label: 'Send 5 to server',
+          click: () => sendBurst(5),
+        },
+        {
+          label: 'Send 10 to server',
+          click: () => sendBurst(10),
+        },
+        { type: 'separator' },
         {
           label: 'Burst of 8 (tests the 5 on-screen limit)',
           click: () => {
@@ -60,21 +82,41 @@ function debugMenu(): MenuItemConstructorOptions[] {
   ];
 }
 
+function statusLabel({ state, address }: ConnectionStatus): string {
+  switch (state) {
+    case 'not-configured':
+      return 'No server set (open the picker)';
+    case 'connecting':
+      return `Connecting to ${address}…`;
+    case 'connected':
+      return `Connected to ${address}`;
+    case 'reconnecting':
+      return `Disconnected, reconnecting to ${address}…`;
+  }
+}
+
+function updateMenu(status: ConnectionStatus): void {
+  if (!tray) return;
+  tray.setToolTip(`Chatbox: ${statusLabel(status)}`);
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: 'Open picker', click: () => showPicker() },
+      { type: 'separator' },
+      { label: statusLabel(status), enabled: false },
+      { type: 'separator' },
+      ...debugMenu(),
+      { label: 'Quit Chatbox', role: 'quit' },
+    ]),
+  );
+}
+
 export function createTray(): Tray {
   // nativeImage picks up tray@2x.png automatically on high-DPI displays.
   const icon = nativeImage.createFromPath(assetPath('tray.png'));
   tray = new Tray(icon);
-  tray.setToolTip('Chatbox');
 
-  const menu = Menu.buildFromTemplate([
-    { label: 'Open picker', click: () => showPicker() },
-    { type: 'separator' },
-    { label: 'Not connected', enabled: false },
-    { type: 'separator' },
-    ...debugMenu(),
-    { label: 'Quit Chatbox', role: 'quit' },
-  ]);
-  tray.setContextMenu(menu);
+  updateMenu(getStatus());
+  onStatus(updateMenu);
 
   // Windows/Linux users expect a left click on the tray icon to open the app.
   if (process.platform !== 'darwin') {

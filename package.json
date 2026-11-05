@@ -39,7 +39,7 @@
     "@tsconfig/svelte": "^5.0.8",
     "@types/electron-squirrel-startup": "^1.0.2",
     "electron": "45.2.3",
-    "oxfmt": "^0.41.0",
+    "oxfmt": "^0.76.0",
     "oxlint": "^1.91.0",
     "svelte": "^5.57.3",
     "svelte-check": "^4.7.8",
@@ -48,6 +48,14 @@
     "vite": "^8.3.6"
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^11.0.2",
+    "socket.io-client": "^4.8.4"
+  },
+  "overrides": {
+    "@electron/asar": {
+      "glob": "^14.0.3",
+      "minimatch": "^11.0.4"
+    }
   }
 }
