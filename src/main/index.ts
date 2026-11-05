@@ -33,6 +33,22 @@ if (!app.requestSingleInstanceLock()) {
 
   registerIpc();
 
+  // Crash diagnostics: name the window or helper process that died and why.
+  // (The picker also reloads itself; see picker.ts.)
+  app.on('render-process-gone', (_event, contents, details) => {
+    console.error(
+      `[crash] renderer "${contents.getTitle() || contents.getURL()}" gone:`,
+      `reason=${details.reason} exitCode=${details.exitCode}`,
+    );
+  });
+  app.on('child-process-gone', (_event, details) => {
+    console.error(
+      `[crash] ${details.type} process gone:`,
+      `reason=${details.reason} exitCode=${details.exitCode}`,
+      details.name ?? '',
+    );
+  });
+
   void app.whenReady().then(() => {
     // Packaged builds hide the dock icon via LSUIElement; this covers dev runs.
     app.dock?.hide();
