@@ -12,6 +12,7 @@ export const IpcChannel = {
   RefreshEmotes: 'emotes:refresh',
   EmotesChanged: 'emotes:changed',
   SendEmote: 'emotes:send',
+  ResolveEmoteSet: 'emotes:resolveSet',
   ToggleFavorite: 'favorites:toggle',
   GetHotkey: 'hotkey:get',
   HotkeyChanged: 'hotkey:changed',
@@ -57,6 +58,10 @@ export const MAX_FAVORITES = 10;
 /** Which view the picker opens on. */
 export type PickerView = 'picker' | 'settings';
 
+export type ResolvedSet =
+  | { ok: true; id: string; name: string; count: number }
+  | { ok: false; error: string };
+
 export type FavoriteResult = 'added' | 'removed' | 'full' | 'invalid';
 
 export type SettingKey = keyof Settings;
@@ -83,6 +88,8 @@ export interface Emote {
 
 export interface EmoteList {
   emotes: Emote[];
+  /** Display names of cached sets, by set ID. */
+  setNames: Record<string, string>;
   /** Set when the last refresh failed; `emotes` may still hold cached data. */
   error: string | null;
   /** True while a refresh from 7TV is in flight. */
@@ -119,6 +126,8 @@ export interface PickerApi {
   onEmotesChanged(callback: (list: EmoteList) => void): void;
   /** Send to the server and show locally. Resolves false for an invalid ID. */
   sendEmote(emoteId: string): Promise<boolean>;
+  /** Check a pasted 7TV set link or ID (old or new format) before adding it. */
+  resolveEmoteSet(input: string): Promise<ResolvedSet>;
   /** Add or remove a favorite. Adding to a full list returns `full`. */
   toggleFavorite(emote: Emote): Promise<FavoriteResult>;
   /** The hotkey that is actually registered, or null if registering failed. */

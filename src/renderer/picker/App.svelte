@@ -60,6 +60,7 @@
     <Settings
       {settings}
       {status}
+      setNames={list?.setNames ?? {}}
       {platform}
       {shownCount}
       onBack={() => (view = 'picker')}

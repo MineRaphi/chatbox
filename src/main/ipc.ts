@@ -1,7 +1,7 @@
 import { app, ipcMain } from 'electron';
 import { IpcChannel, type AppInfo } from '../shared/ipc';
 import { getStatus, sendEmote } from './connection';
-import { getEmotes, refreshEmotes } from './emotes';
+import { getEmotes, refreshEmotes, resolveSet } from './emotes';
 import { toggleFavorite } from './favorites';
 import { getHotkey, setRecording } from './hotkey';
 import { getSettings, isSettingKey, setSetting } from './store';
@@ -29,6 +29,10 @@ export function registerIpc(): void {
 
   ipcMain.handle(IpcChannel.SendEmote, (_event, emoteId: unknown) =>
     typeof emoteId === 'string' ? sendEmote(emoteId) : false,
+  );
+
+  ipcMain.handle(IpcChannel.ResolveEmoteSet, (_event, input: unknown) =>
+    resolveSet(input),
   );
 
   ipcMain.handle(IpcChannel.ToggleFavorite, (_event, emote: unknown) =>

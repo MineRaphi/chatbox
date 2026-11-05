@@ -1,7 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { BrowserWindow, app, net } from 'electron';
-import { IpcChannel, type Emote, type EmoteList } from '../shared/ipc';
+import {
+  IpcChannel,
+  type Emote,
+  type EmoteList,
+  type ResolvedSet,
+} from '../shared/ipc';
 import { isEmoteId } from './overlay';
 import { getSettings, onSettingChange } from './store';
 
@@ -9,8 +14,20 @@ import { getSettings, onSettingChange } from './store';
 const MAX_AGE_MS = 24 * 60 * 60 * 1_000;
 const FETCH_TIMEOUT_MS = 10_000;
 
+// 7TV set IDs: current ULIDs, and the 24-hex ObjectIDs older links still use.
+const ULID = /^[0-9A-Z]{26}$/;
+const SET_IN_INPUT = /(?:^|\/)([0-9A-Za-z]{26}|[0-9a-fA-F]{24})(?:$|[/?#])/;
+
 interface CachedSet {
   fetchedAt: number;
+  emotes: Emote[];
+  /** Missing in caches written before set names were stored. */
+  name?: string;
+}
+
+interface FetchedSet {
+  id: string;
+  name: string;
   emotes: Emote[];
 }
 
@@ -20,14 +37,22 @@ interface CacheFile {
 }
 
 let cache: CacheFile = { version: 1, sets: {} };
-let list: EmoteList = { emotes: [], error: null, loading: false };
+let list: EmoteList = { emotes: [], setNames: {}, error: null, loading: false };
 let refreshing: Promise<void> | null = null;
 
 const cachePath = (): string =>
   path.join(app.getPath('userData'), 'emote-cache.json');
 
+function setNames(): Record<string, string> {
+  const names: Record<string, string> = {};
+  for (const [id, set] of Object.entries(cache.sets)) {
+    if (set.name) names[id] = set.name;
+  }
+  return names;
+}
+
 function publish(next: Partial<EmoteList>): void {
-  list = { ...list, ...next };
+  list = { ...list, setNames: setNames(), ...next };
   for (const win of BrowserWindow.getAllWindows()) {
     win.webContents.send(IpcChannel.EmotesChanged, list);
   }
@@ -53,24 +78,82 @@ function combine(): Emote[] {
   return out;
 }
 
-/** Keep only well-formed emotes from a 7TV API response. */
-function parseSet(body: unknown): Emote[] {
-  const raw = (body as { emotes?: unknown })?.emotes;
-  if (!Array.isArray(raw)) throw new Error('unexpected response from 7TV');
-  return raw.flatMap((e): Emote[] => {
+/** Keep only well-formed parts of a 7TV emote set response. */
+function parseSet(body: unknown, requestedId: string): FetchedSet {
+  const set = body as {
+    id?: unknown;
+    name?: unknown;
+    emotes?: unknown;
+    owner?: { display_name?: unknown } | null;
+  };
+  if (!Array.isArray(set?.emotes)) {
+    throw new Error('unexpected response from 7TV');
+  }
+  const emotes = set.emotes.flatMap((e): Emote[] => {
     const id: unknown = e?.id;
     const name: unknown = e?.name;
     if (!isEmoteId(id) || typeof name !== 'string' || !name) return [];
     return [{ id, name, animated: e?.data?.animated === true }];
   });
+  // The API answers old ObjectID requests with the set's current ULID.
+  const id =
+    typeof set.id === 'string' && ULID.test(set.id) ? set.id : requestedId;
+  // Many sets keep a generic name ("Default Emote Set"), so add the owner.
+  const setName = typeof set.name === 'string' && set.name ? set.name : id;
+  const owner = set.owner?.display_name;
+  const name = (
+    typeof owner === 'string' && owner ? `${setName} · ${owner}` : setName
+  ).slice(0, 100);
+  return { id, name, emotes };
 }
 
-async function fetchSet(setId: string): Promise<Emote[]> {
-  const res = await net.fetch(`https://7tv.io/v3/emote-sets/${setId}`, {
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-  });
+async function fetchSet(setId: string): Promise<FetchedSet> {
+  const res = await net.fetch(
+    `https://7tv.io/v3/emote-sets/${encodeURIComponent(setId)}`,
+    { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
+  );
+  if (res.status === 404 || res.status === 400) {
+    throw new Error("7TV doesn't know that emote set");
+  }
   if (!res.ok) throw new Error(`7TV returned ${res.status} for set ${setId}`);
-  return parseSet(await res.json());
+  return parseSet(await res.json(), setId);
+}
+
+/**
+ * Look up a set from a 7tv.app link or a bare ID, old or new format, and
+ * cache it. Used before a set is added, so typos never get saved.
+ */
+export async function resolveSet(input: unknown): Promise<ResolvedSet> {
+  if (typeof input !== 'string') return { ok: false, error: 'Invalid input.' };
+  const text = input.trim();
+  const requested =
+    text.toLowerCase() === 'global' ? 'global' : SET_IN_INPUT.exec(text)?.[1];
+  if (!requested) {
+    return { ok: false, error: 'Paste a 7TV emote set link or ID.' };
+  }
+
+  try {
+    const set = await fetchSet(
+      // ULIDs are uppercase; ObjectIDs are hex and case-insensitive.
+      requested.length === 26
+        ? requested.toUpperCase()
+        : requested.toLowerCase(),
+    );
+    const id = requested === 'global' ? 'global' : set.id;
+    cache.sets[id] = {
+      fetchedAt: Date.now(),
+      emotes: set.emotes,
+      name: set.name,
+    };
+    await writeCache().catch((err) =>
+      console.warn('[emotes] could not write cache:', err),
+    );
+    publish({});
+    return { ok: true, id, name: set.name, count: set.emotes.length };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `Couldn't add that set: ${message}` };
+  }
 }
 
 async function readCache(): Promise<void> {
@@ -109,9 +192,11 @@ export function refreshEmotes(force = false): Promise<void> {
     await Promise.all(
       due.map(async (id) => {
         try {
+          const set = await fetchSet(id);
           cache.sets[id] = {
             fetchedAt: Date.now(),
-            emotes: await fetchSet(id),
+            emotes: set.emotes,
+            name: set.name,
           };
         } catch (err) {
           failures.push(err instanceof Error ? err.message : String(err));

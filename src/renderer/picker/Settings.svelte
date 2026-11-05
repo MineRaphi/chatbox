@@ -14,11 +14,14 @@
   interface Props {
     settings: Settings;
     status: ConnectionStatus | null;
+    /** Display names of cached sets, by ID. */
+    setNames: Record<string, string>;
     platform: NodeJS.Platform;
     shownCount: number;
     onBack: () => void;
   }
-  const { settings, status, platform, shownCount, onBack }: Props = $props();
+  const { settings, status, setNames, platform, shownCount, onBack }: Props =
+    $props();
 
   const SIZES = [
     { value: 200, label: 'S' },
@@ -30,8 +33,6 @@
     { value: 'cursor', label: 'Under cursor' },
     { value: 'all', label: 'All screens' },
   ];
-  // A 7TV set ID on its own, or inside a 7tv.app link.
-  const SET_ID = /(?:^|\/)([0-9A-Z]{26})(?:$|[/?#])/;
 
   // Server fields are edited locally and only applied on "Save and connect",
   // because saving reconnects. Everything else saves on change.
@@ -40,6 +41,8 @@
   let serverError = $state('');
   let newSet = $state('');
   let setError = $state('');
+  let setNotice = $state('');
+  let addingSet = $state(false);
   let hostEl = $state<HTMLInputElement>();
   // Follows the slider while dragging; saved once it's let go.
   let durationMs = $state(0);
@@ -80,22 +83,35 @@
     if (host.trim()) onBack();
   }
 
-  function addSet(event: SubmitEvent): void {
+  // Main looks the set up on 7TV first: it accepts old and new link formats,
+  // returns the current ID, and rejects sets that don't exist.
+  async function addSet(event: SubmitEvent): Promise<void> {
     event.preventDefault();
+    if (addingSet) return;
     setError = '';
-    const input = newSet.trim();
-    const id =
-      input.toLowerCase() === 'global' ? 'global' : SET_ID.exec(input)?.[1];
-    if (!id) {
-      setError = 'Paste a 7TV emote set link or ID.';
-      return;
+    setNotice = '';
+    addingSet = true;
+    try {
+      const result = await window.chatbox.resolveEmoteSet(newSet);
+      if (!result.ok) {
+        setError = result.error;
+        return;
+      }
+      if (settings.emoteSets.includes(result.id)) {
+        setError = `${result.name} is already added.`;
+        return;
+      }
+      save('emoteSets', [...settings.emoteSets, result.id]);
+      setNotice = `Added ${result.name} (${result.count} emotes).`;
+      newSet = '';
+    } finally {
+      addingSet = false;
     }
-    if (settings.emoteSets.includes(id)) {
-      setError = 'That set is already added.';
-      return;
-    }
-    save('emoteSets', [...settings.emoteSets, id]);
-    newSet = '';
+  }
+
+  function setLabel(id: string): string {
+    if (id === 'global') return '7TV global';
+    return setNames[id] ?? id;
   }
 
   function removeSet(id: string): void {
@@ -262,8 +278,11 @@
       <ul class="flex flex-col gap-1">
         {#each settings.emoteSets as id (id)}
           <li class="flex items-center justify-between gap-2 rounded-md bg-zinc-800 px-3 py-1.5 text-sm">
-            <span class="truncate font-mono text-xs">
-              {id === 'global' ? '7TV global' : id}
+            <span
+              class="truncate text-xs {setLabel(id) === id ? 'font-mono' : ''}"
+              title={id}
+            >
+              {setLabel(id)}
             </span>
             <button
               class="text-xs text-zinc-400 hover:text-red-400 disabled:opacity-30"
@@ -284,9 +303,18 @@
           autocomplete="off"
           spellcheck="false"
         />
-        <button class="rounded-md bg-zinc-800 px-3 text-sm hover:bg-zinc-700">Add</button>
+        <button
+          class="rounded-md bg-zinc-800 px-3 text-sm hover:bg-zinc-700 disabled:opacity-50"
+          disabled={addingSet}
+        >
+          {addingSet ? 'Adding…' : 'Add'}
+        </button>
       </form>
-      {#if setError}<p class="text-xs text-red-400">{setError}</p>{/if}
+      {#if setError}
+        <p class="text-xs text-red-400">{setError}</p>
+      {:else if setNotice}
+        <p class="text-xs text-emerald-400">{setNotice}</p>
+      {/if}
     </section>
 
     <!-- General -->

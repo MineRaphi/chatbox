@@ -33,6 +33,8 @@ const api: PickerApi = {
     );
   },
   sendEmote: (emoteId) => ipcRenderer.invoke(IpcChannel.SendEmote, emoteId),
+  resolveEmoteSet: (input) =>
+    ipcRenderer.invoke(IpcChannel.ResolveEmoteSet, input),
   toggleFavorite: (emote) =>
     ipcRenderer.invoke(IpcChannel.ToggleFavorite, emote),
   getHotkey: () => ipcRenderer.invoke(IpcChannel.GetHotkey),
