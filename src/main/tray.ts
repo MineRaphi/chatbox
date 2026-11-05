@@ -24,8 +24,8 @@ const TEST_EMOTES = [
 ];
 
 let tray: Tray | null = null;
-let icon: NativeImage;
-let dimmedIcon: NativeImage;
+type IconState = 'normal' | 'offline' | 'dnd';
+let icons: Record<IconState, NativeImage>;
 
 function randomTestEmote(): string {
   return TEST_EMOTES[Math.floor(Math.random() * TEST_EMOTES.length)]!;
@@ -100,22 +100,26 @@ function statusLabel({ state, address }: ConnectionStatus): string {
   }
 }
 
-/** The same icon at reduced opacity, for Do not disturb. */
-function dim(image: NativeImage): NativeImage {
-  const out = nativeImage.createEmpty();
-  for (const scaleFactor of image.getScaleFactors()) {
-    const { width, height } = image.getSize(scaleFactor);
-    const pixels = Buffer.from(image.toBitmap({ scaleFactor }));
-    // Bitmaps are 4 bytes per pixel with alpha last; halve the alpha.
-    for (let i = 3; i < pixels.length; i += 4) pixels[i] = pixels[i]! >> 1;
-    out.addRepresentation({
-      scaleFactor,
-      buffer: pixels,
-      width: Math.round(width * scaleFactor),
-      height: Math.round(height * scaleFactor),
-    });
-  }
-  return out;
+/**
+ * Tray icons from assets/ (see scripts/generate-tray-icons.py). macOS gets
+ * monochrome template images it recolours for light and dark menu bars;
+ * Windows and Linux get the coloured icon, since taskbars are often dark.
+ * The @2x files are picked up automatically on high-DPI displays.
+ */
+function loadIcons(): Record<IconState, NativeImage> {
+  const suffix = process.platform === 'darwin' ? 'Template' : '';
+  const load = (name: string): NativeImage =>
+    nativeImage.createFromPath(assetPath(`${name}${suffix}.png`));
+  return {
+    normal: load('tray'),
+    offline: load('trayOffline'),
+    dnd: load('trayDnd'),
+  };
+}
+
+function iconState(status: ConnectionStatus, dnd: boolean): IconState {
+  if (dnd) return 'dnd';
+  return status.state === 'connected' ? 'normal' : 'offline';
 }
 
 function updateMenu(): void {
@@ -124,7 +128,7 @@ function updateMenu(): void {
   const dnd = getSetting('doNotDisturb');
   const hotkey = getHotkey();
 
-  tray.setImage(dnd ? dimmedIcon : icon);
+  tray.setImage(icons[iconState(status, dnd)]);
   tray.setToolTip(
     `Chatbox: ${statusLabel(status)}${dnd ? ' (Do not disturb)' : ''}`,
   );
@@ -154,10 +158,8 @@ function updateMenu(): void {
 }
 
 export function createTray(): Tray {
-  // nativeImage picks up tray@2x.png automatically on high-DPI displays.
-  icon = nativeImage.createFromPath(assetPath('tray.png'));
-  dimmedIcon = dim(icon);
-  tray = new Tray(icon);
+  icons = loadIcons();
+  tray = new Tray(icons.offline);
 
   updateMenu();
   onStatus(updateMenu);

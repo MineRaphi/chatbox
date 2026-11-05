@@ -2,11 +2,11 @@
   import { tick } from 'svelte';
   import {
     MAX_FAVORITES,
-    emoteUrl,
     type ConnectionStatus,
     type Emote,
     type EmoteList,
   } from '../../shared/ipc';
+  import EmoteImage from './EmoteImage.svelte';
   import StatusDot from './StatusDot.svelte';
 
   interface Props {
@@ -90,6 +90,10 @@
       if (flashId === emote.id) flashId = null;
     }, FLASH_MS);
     await window.chatbox.sendEmote(emote.id);
+    // The local preview always shows, so say when nobody else got it.
+    if (status?.state !== 'connected') {
+      showNotice('Not connected, only you saw that.');
+    }
   }
 
   async function move(delta: number): Promise<void> {
@@ -163,12 +167,7 @@
         void toggleFavorite(fav);
       }}
     >
-      <img
-        src={emoteUrl(fav.id, 2)}
-        alt={fav.name}
-        class="max-h-7 max-w-7 object-contain"
-        draggable="false"
-      />
+      <EmoteImage emote={fav} size="max-h-7 max-w-7" />
     </button>
   {:else}
     <p class="text-xs text-zinc-500">Star an emote to pin it here.</p>
@@ -188,11 +187,35 @@
         Try again
       </button>
     </div>
+  {:else if !list.emotes.length}
+    <div class="mt-16 flex flex-col items-center gap-3 text-center text-sm">
+      <p class="text-zinc-400">Your emote sets are empty.</p>
+      <button
+        class="rounded-md bg-zinc-800 px-3 py-1.5 hover:bg-zinc-700"
+        onclick={onOpenSettings}
+      >
+        Add a set in Settings
+      </button>
+    </div>
   {:else if !results.length}
     <p class="mt-16 text-center text-sm text-zinc-500">
       No emotes match “{query.trim()}”
     </p>
   {:else}
+    {#if list.error}
+      <div
+        class="mb-3 flex items-center justify-between gap-2 rounded-md bg-amber-950/60 px-3 py-2 text-xs text-amber-200"
+        role="status"
+      >
+        <span>Couldn't refresh emotes. Showing saved ones.</span>
+        <button
+          class="shrink-0 underline hover:text-amber-100"
+          onclick={() => window.chatbox.refreshEmotes()}
+        >
+          Retry
+        </button>
+      </div>
+    {/if}
     <div class="grid grid-cols-6 gap-1" role="listbox" aria-label="Emotes">
       {#each results as emote, i (emote.id)}
         {@const pinned = favoriteIds.has(emote.id)}
@@ -207,13 +230,7 @@
               {flashId === emote.id ? 'ring-2 ring-emerald-400' : ''}"
             onclick={() => send(emote)}
           >
-            <img
-              src={emoteUrl(emote.id, 2)}
-              alt={emote.name}
-              class="max-h-9 max-w-9 object-contain"
-              loading="lazy"
-              draggable="false"
-            />
+            <EmoteImage {emote} size="max-h-9 max-w-9" lazy />
           </button>
           <button
             class="absolute top-0 right-0 rounded p-0.5 transition-opacity

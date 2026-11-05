@@ -52,6 +52,22 @@
 
   const firstRun = $derived(status?.state === 'not-configured');
 
+  // socket.io reports transport-level reasons; turn them into advice.
+  const connectionProblem = $derived.by((): string | null => {
+    if (status?.state !== 'reconnecting' || !status.error) return null;
+    const reason = status.error;
+    if (/timeout/i.test(reason)) {
+      return `No answer from ${status.address}. Check the address and that the server is running.`;
+    }
+    if (/websocket|xhr|transport|refused/i.test(reason)) {
+      return `Can't reach ${status.address}. Is the server running, and is the address right?`;
+    }
+    if (reason === 'io server disconnect') {
+      return 'The server closed the connection. Reconnecting…';
+    }
+    return `Lost the connection to ${status.address}. Reconnecting…`;
+  });
+
   // Reset the server form and focus it every time the view opens.
   // Only `shownCount` triggers this; other setting changes must not wipe a
   // half-typed address.
@@ -182,6 +198,11 @@
     </button>
     {#if serverError}
       <p class="text-sm text-red-400">{serverError}</p>
+    {:else if connectionProblem}
+      <div class="flex flex-col gap-0.5" role="status">
+        <p class="text-sm text-amber-300">{connectionProblem}</p>
+        <p class="text-xs text-zinc-500">Details: {status?.error}</p>
+      </div>
     {/if}
   </form>
 

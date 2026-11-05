@@ -1,5 +1,7 @@
 import { EventEmitter } from 'node:events';
-import { BrowserWindow } from 'electron';
+import fs from 'node:fs';
+import path from 'node:path';
+import { BrowserWindow, app } from 'electron';
 import Store from 'electron-store';
 import {
   IpcChannel,
@@ -81,15 +83,11 @@ const events = new EventEmitter<{
 // Keys written by the old (pre-rework) app into the same config file.
 const LEGACY_KEYS = ['theme', 'serverIP', 'username', 'password'] as const;
 
-/**
- * One-time cleanup of the old app's settings: keep the server address,
- * fix the port type, and delete everything else, including any plaintext
- * password the old login screen saved.
- */
-function migrateLegacy(s: Store<Settings>): void {
-  const raw = s.store as unknown as Record<string, unknown>;
-  if (!LEGACY_KEYS.some((k) => k in raw)) return;
-
+/** Copy the old app's server address into the new settings. */
+function importLegacyServer(
+  s: Store<Settings>,
+  raw: Record<string, unknown>,
+): void {
   const oldHost = raw.serverIP;
   if (typeof oldHost === 'string' && HOST.test(oldHost.trim())) {
     s.set('serverHost', oldHost.trim());
@@ -99,15 +97,62 @@ function migrateLegacy(s: Store<Settings>): void {
     'serverPort',
     isInt(oldPort, 1, 65_535) ? oldPort : DEFAULTS.serverPort,
   );
+}
 
+/**
+ * One-time cleanup of the old app's settings: keep the server address,
+ * fix the port type, and delete everything else, including any plaintext
+ * password the old login screen saved.
+ */
+function migrateLegacy(s: Store<Settings>): void {
+  const raw = s.store as unknown as Record<string, unknown>;
+  if (!LEGACY_KEYS.some((k) => k in raw)) return;
+
+  importLegacyServer(s, raw);
   const untyped = s as unknown as Store<Record<string, unknown>>;
   for (const key of LEGACY_KEYS) untyped.delete(key);
+}
+
+/**
+ * The old app was called "chatbox", the new one "Chatbox". On macOS and
+ * Windows that is the same settings folder; on Linux (case-sensitive) the
+ * old file lives on separately. Import its server address once and strip
+ * the saved login from it.
+ */
+function migrateOldFolder(s: Store<Settings>): void {
+  const oldFile = path.join(app.getPath('appData'), 'chatbox', 'config.json');
+  if (
+    path.resolve(oldFile).toLowerCase() === path.resolve(s.path).toLowerCase()
+  ) {
+    return; // same file, handled by migrateLegacy
+  }
+
+  let raw: Record<string, unknown>;
+  try {
+    raw = JSON.parse(fs.readFileSync(oldFile, 'utf8'));
+  } catch {
+    return; // no old file, or unreadable
+  }
+  if (!('username' in raw) && !('password' in raw) && !('serverIP' in raw)) {
+    return;
+  }
+
+  if (!s.get('serverHost')) importLegacyServer(s, raw);
+  delete raw.username;
+  delete raw.password;
+  delete raw.serverIP;
+  try {
+    fs.writeFileSync(oldFile, JSON.stringify(raw, null, 2));
+  } catch (err) {
+    console.warn('[store] could not clean the old settings file:', err);
+  }
 }
 
 function getStore(): Store<Settings> {
   if (!store) {
     store = new Store<Settings>({ defaults: DEFAULTS });
     migrateLegacy(store);
+    migrateOldFolder(store);
   }
   return store;
 }
