@@ -9,7 +9,7 @@ import { initHotkey } from './hotkey';
 import { registerIpc } from './ipc';
 import { initOverlays } from './overlay';
 import { initPicker, showPicker } from './picker';
-import { configureDisplayServer } from './session';
+import { relaunchOnX11IfNeeded } from './session';
 import { getSetting } from './store';
 import { createTray } from './tray';
 import { initUpdates } from './updates';
@@ -32,8 +32,9 @@ if (!app.isPackaged) {
 }
 
 // Linux on Wayland: XWayland by default so overlays can stay on top (see
-// session.ts). After the dev profile, because it reads a setting.
-configureDisplayServer();
+// session.ts). After the dev profile, because it reads a setting; before
+// the single-instance lock, which this copy must not take.
+const relaunchingOnX11 = relaunchOnX11IfNeeded();
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -55,7 +56,10 @@ if (process.platform === 'win32') {
 }
 
 // Only one instance: a second launch opens the picker of the running one.
-if (!app.requestSingleInstanceLock()) {
+if (relaunchingOnX11) {
+  // The X11 copy starts as soon as this one exits.
+  app.exit(0);
+} else if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
   app.on('second-instance', () => showPicker());
