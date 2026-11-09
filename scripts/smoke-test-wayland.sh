@@ -26,6 +26,8 @@ ${XVFB_RUN:-xvfb-run -a} bash -c '
     pkill -f -- "$SMOKE_PATTERN"
     exit 0
   fi
+  echo "--- Chatbox processes at the time of the check:" >>"$SMOKE_LOG"
+  ps -eo pid,etime,args | grep -i "[c]hatbox" >>"$SMOKE_LOG" || echo "(none)" >>"$SMOKE_LOG"
   exit 1
 ' _ "$@"
 code=$?

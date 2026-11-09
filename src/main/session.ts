@@ -1,4 +1,4 @@
-import { app } from 'electron';
+import { spawn } from 'node:child_process';
 import { getSetting } from './store';
 
 // On a Wayland desktop, apps can't keep their windows on top or put them on
@@ -11,7 +11,10 @@ import { getSetting } from './store';
 // Electron picks Wayland or X11 before any of our code runs, so
 // app.commandLine.appendSwitch('ozone-platform', ...) is too late (tested:
 // it still tried Wayland). It has to be a real command-line argument, so
-// Chatbox restarts itself once with --ozone-platform=x11.
+// Chatbox starts an X11 copy of itself and exits. That's a plain spawn, not
+// app.relaunch: on Linux, relaunch goes through a helper process and its
+// X11 copy silently never ran on GitHub's Ubuntu runner. A spawned copy
+// starts at once and shares stdout/stderr, so any failure shows up in logs.
 
 export const X11_FLAG = '--ozone-platform=x11';
 
@@ -21,7 +24,8 @@ let nativeWayland = false;
 /**
  * On a Wayland session (unless native Wayland mode is on), make sure this
  * process runs on X11. Returns true when it started an X11 copy of itself,
- * in which case the caller must exit right away. Call before the
+ * in which case the caller must exit right away (without taking the
+ * single-instance lock, which the copy needs). Call before the
  * single-instance lock, and after the settings folder is final (dev
  * profile), since it reads a setting.
  */
@@ -38,11 +42,16 @@ export function relaunchOnX11IfNeeded(): boolean {
 
   // An AppImage must be started through the AppImage file, not the binary
   // inside its temporary mount.
-  const appImage = process.env.APPIMAGE;
-  app.relaunch({
-    args: [...process.argv.slice(1), X11_FLAG],
-    ...(appImage ? { execPath: appImage } : {}),
+  const executable = process.env.APPIMAGE ?? process.execPath;
+  const args = [...process.argv.slice(1), X11_FLAG];
+  console.log(
+    `[session] Wayland session: starting on XWayland: ${executable} ${args.join(' ')}`,
+  );
+  const child = spawn(executable, args, { detached: true, stdio: 'inherit' });
+  child.on('error', (err) => {
+    console.error('[session] could not start the XWayland copy:', err);
   });
+  child.unref();
   return true;
 }
 
