@@ -87,16 +87,24 @@ function debugMenu(): MenuItemConstructorOptions[] {
   ];
 }
 
-function statusLabel({ state, address }: ConnectionStatus): string {
+/** `friends`, or `default group` for an empty code. */
+function groupName(group: string | null): string {
+  return group ? group : 'default group';
+}
+
+function statusLabel(status: ConnectionStatus): string {
+  const { state, address, group, members } = status;
   switch (state) {
     case 'not-configured':
       return 'No server set (open the picker)';
     case 'connecting':
       return `Connecting to ${address}…`;
     case 'connected':
-      return `Connected to ${address}`;
+      return `${address} · ${groupName(group)} · ${members.length} online`;
     case 'reconnecting':
       return `Disconnected, reconnecting to ${address}…`;
+    case 'rejected':
+      return `Couldn't join ${address} (see Settings)`;
   }
 }
 
@@ -123,7 +131,9 @@ function iconState(status: ConnectionStatus, dnd: boolean): IconState {
 }
 
 function updateMenu(): void {
-  if (!tray) return;
+  // Status changes keep coming while the app quits (the socket closing
+  // reports a disconnect), after the tray is already gone.
+  if (!tray || tray.isDestroyed()) return;
   const status = getStatus();
   const dnd = getSetting('doNotDisturb');
   const hotkey = getHotkey();
@@ -173,6 +183,9 @@ export function createTray(): Tray {
     tray.on('click', () => showPicker());
   }
 
-  app.on('before-quit', () => tray?.destroy());
+  app.on('before-quit', () => {
+    tray?.destroy();
+    tray = null;
+  });
   return tray;
 }

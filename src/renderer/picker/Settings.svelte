@@ -54,6 +54,8 @@
 
   // socket.io reports transport-level reasons; turn them into advice.
   const connectionProblem = $derived.by((): string | null => {
+    // The server's own reason (or that it's too old) says it best.
+    if (status?.state === 'rejected') return status.error;
     if (status?.state !== 'reconnecting' || !status.error) return null;
     const reason = status.error;
     if (/timeout/i.test(reason)) {
@@ -201,7 +203,9 @@
     {:else if connectionProblem}
       <div class="flex flex-col gap-0.5" role="status">
         <p class="text-sm text-amber-300">{connectionProblem}</p>
-        <p class="text-xs text-zinc-500">Details: {status?.error}</p>
+        {#if status?.state !== 'rejected'}
+          <p class="text-xs text-zinc-500">Details: {status?.error}</p>
+        {/if}
       </div>
     {/if}
   </form>
@@ -230,8 +234,8 @@
       />
     </label>
     <p class="text-xs text-zinc-500">
-      Saved now; used once the server supports groups. Until then everyone on the
-      server is one group.
+      Everyone with the same group code sees each other's emotes. Leave it empty
+      for the server's shared default group.
     </p>
   </section>
 
@@ -276,6 +280,12 @@
         options={MONITORS}
         value={settings.overlayMonitor}
         onChange={(v) => save('overlayMonitor', v)}
+      />
+      <Toggle
+        label="Show sender's name"
+        hint="A small label under emotes from others."
+        checked={settings.showSenderName}
+        onChange={(v) => save('showSenderName', v)}
       />
       <Toggle
         label="Max 5 on screen"

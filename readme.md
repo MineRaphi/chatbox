@@ -15,7 +15,7 @@ Chatbox lives in the tray (the menu bar on macOS). Press a hotkey, search, hit E
 
 ## Using it
 
-1. Start a [chatbox-server](https://github.com/MineRaphi/chatbox-server) (`npm install && npm start`, port 3847).
+1. Start a [chatbox-server](https://github.com/MineRaphi/chatbox-server) v2 (`npm install && npm start`, port 3847). The old v1 server doesn't work with this app.
 2. Start Chatbox. On first run it asks for the server address.
 3. Press **⌘⇧E** (macOS) or **Ctrl+Shift+E** (Windows, Linux) to open the picker.
 
@@ -32,7 +32,7 @@ Everything else (hotkey, overlay size and duration, screens, limits, emote sets,
 
 The tray icon shows the state at a glance: normal when connected, dimmed when there's no server or the connection is down, crossed out during Do not disturb.
 
-Everyone connected to the same server is one group for now. The display name and group code fields are saved already and will be used once the server supports groups.
+**Groups:** everyone on the same server with the same group code sees each other's emotes, with the sender's name underneath (Settings can hide it). Leave the code empty to use the server's shared default group. The picker footer and the tray show your group and how many people are online; hover the footer to see who.
 
 ## Installing
 
@@ -107,7 +107,9 @@ python3 scripts/generate-tray-icons.py
 
 - **The hotkey does nothing.** Another app may own it. Settings shows a warning if so; record a different one.
 - **No emotes from friends.** Check the tray: is it connected, and is Do not disturb off? Everyone must be on the same server.
-- **"Not connected, only you saw that."** The server can't be reached. Settings explains what failed.
+- **"Not connected, only you saw that."** The server can't be reached, or you haven't joined a group. Settings explains what failed.
+- **"This server is too old for this version of Chatbox."** The server is still v1; it needs chatbox-server v2.
+- **"Slow down"** in the picker: the server's rate limit (30 emotes per 10 seconds by default) dropped some of yours.
 - **Linux: no tray icon.** GNOME needs the AppIndicator extension.
 - **Linux: the overlay is black or missing.** Transparent windows need a running compositor.
 - **Linux on Wayland: the hotkey doesn't work.** It goes through the desktop's GlobalShortcuts portal, which not every desktop supports yet. Open the picker from the tray instead.

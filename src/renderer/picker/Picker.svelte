@@ -13,11 +13,18 @@
     list: EmoteList | null;
     status: ConnectionStatus | null;
     favorites: Emote[];
+    limited: { retryInMs: number } | null;
     shownCount: number;
     onOpenSettings: () => void;
   }
-  const { list, status, favorites, shownCount, onOpenSettings }: Props =
-    $props();
+  const {
+    list,
+    status,
+    favorites,
+    limited,
+    shownCount,
+    onOpenSettings,
+  }: Props = $props();
 
   const COLS = 6;
   const FLASH_MS = 400;
@@ -32,6 +39,13 @@
   let noticeTimer: ReturnType<typeof setTimeout> | undefined;
 
   const favoriteIds = $derived(new Set(favorites.map((f) => f.id)));
+
+  // The server dropped an emote: you're over the rate limit.
+  $effect(() => {
+    if (!limited) return;
+    const seconds = Math.max(1, Math.ceil(limited.retryInMs / 1000));
+    showNotice(`Slow down: others won't see emotes for ${seconds} s.`);
+  });
 
   function showNotice(text: string): void {
     notice = text;

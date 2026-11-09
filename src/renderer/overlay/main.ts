@@ -8,23 +8,25 @@ const POSITION_TRIES = 12;
 const POP_MS = 350;
 const FADE_MS = 1_000;
 const LOAD_TIMEOUT_MS = 4_000;
+// Room kept under the emote for the sender's name.
+const LABEL_SPACE_PX = 32;
 
 interface Point {
   x: number;
   y: number;
 }
 
-const onScreen: HTMLImageElement[] = [];
+const onScreen: HTMLElement[] = [];
 const recent: Point[] = [];
 
-function randomPosition(size: number): Point {
+function randomPosition(size: number, height: number): Point {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const mx = w * MARGIN_RATIO;
   const my = h * MARGIN_RATIO;
   const pick = (): Point => ({
     x: mx + Math.random() * Math.max(0, w - size - 2 * mx),
-    y: my + Math.random() * Math.max(0, h - size - 2 * my),
+    y: my + Math.random() * Math.max(0, h - height - 2 * my),
   });
 
   // Prefer a spot that doesn't overlap the last few emotes.
@@ -42,10 +44,10 @@ function randomPosition(size: number): Point {
   return best;
 }
 
-function remove(img: HTMLImageElement): void {
-  const i = onScreen.indexOf(img);
+function remove(el: HTMLElement): void {
+  const i = onScreen.indexOf(el);
   if (i !== -1) onScreen.splice(i, 1);
-  img.remove();
+  el.remove();
 }
 
 function loadImage(url: string): Promise<HTMLImageElement> {
@@ -89,18 +91,33 @@ async function show(emote: OverlayEmote): Promise<void> {
     while (onScreen.length >= MAX_ON_SCREEN) remove(onScreen[0]!);
   }
 
-  const { x, y } = randomPosition(emote.sizePx);
-  img.className = 'emote';
+  const height = emote.sizePx + (emote.from ? LABEL_SPACE_PX : 0);
+  const { x, y } = randomPosition(emote.sizePx, height);
+
+  const box = document.createElement('div');
+  box.className = 'emote';
+  box.style.left = `${x}px`;
+  box.style.top = `${y}px`;
+  box.style.width = `${emote.sizePx}px`;
+
   img.alt = '';
   img.style.width = `${emote.sizePx}px`;
   img.style.height = `${emote.sizePx}px`;
-  img.style.left = `${x}px`;
-  img.style.top = `${y}px`;
-  document.body.append(img);
-  onScreen.push(img);
+  box.append(img);
+
+  if (emote.from) {
+    const label = document.createElement('span');
+    label.className = 'sender';
+    // textContent, never innerHTML: names come from other people.
+    label.textContent = emote.from;
+    box.append(label);
+  }
+
+  document.body.append(box);
+  onScreen.push(box);
 
   const total = Math.max(emote.durationMs, POP_MS + FADE_MS);
-  const animation = img.animate(
+  const animation = box.animate(
     [
       { transform: 'scale(0)', opacity: 0, offset: 0 },
       { transform: 'scale(1)', opacity: 1, offset: POP_MS / total },
@@ -109,7 +126,7 @@ async function show(emote: OverlayEmote): Promise<void> {
     ],
     { duration: total, easing: 'ease-out', fill: 'forwards' },
   );
-  animation.addEventListener('finish', () => remove(img), { once: true });
+  animation.addEventListener('finish', () => remove(box), { once: true });
 }
 
 window.overlay.onShow((emote) => void show(emote));

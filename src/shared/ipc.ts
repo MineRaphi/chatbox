@@ -8,6 +8,7 @@ export const IpcChannel = {
   SettingsChanged: 'settings:changed',
   GetStatus: 'connection:getStatus',
   StatusChanged: 'connection:status',
+  Limited: 'connection:limited',
   GetEmotes: 'emotes:get',
   RefreshEmotes: 'emotes:refresh',
   EmotesChanged: 'emotes:changed',
@@ -48,6 +49,8 @@ export interface Settings {
   hotkey: string;
   /** Pinned emotes, newest first, at most MAX_FAVORITES. */
   favorites: Emote[];
+  /** Show the sender's name under emotes from others. */
+  showSenderName: boolean;
   /** Drop incoming emotes (your own previews still show). */
   doNotDisturb: boolean;
   launchAtLogin: boolean;
@@ -66,18 +69,34 @@ export type FavoriteResult = 'added' | 'removed' | 'full' | 'invalid';
 
 export type SettingKey = keyof Settings;
 
+/**
+ * - `connecting`: opening the socket, or waiting for the server's `welcome`
+ * - `connected`: joined a group (the server sent `welcome`)
+ * - `rejected`: the server refused the join, or is too old to answer it;
+ *   retried when the server address, name or group code change
+ */
 export type ConnectionState =
   | 'not-configured'
   | 'connecting'
   | 'connected'
-  | 'reconnecting';
+  | 'reconnecting'
+  | 'rejected';
 
 export interface ConnectionStatus {
   state: ConnectionState;
   /** `host:port` of the server, when one is configured. */
   address: string | null;
-  /** Last connection error, shown while reconnecting. */
+  /** Last connection error while reconnecting, or why the join was rejected. */
   error: string | null;
+  /** The group joined, as typed; '' is the default group. Null until joined. */
+  group: string | null;
+  /** Display names in the group, including you. Empty until joined. */
+  members: string[];
+}
+
+/** The server dropped an emote because you sent too many. */
+export interface LimitedNotice {
+  retryInMs: number;
 }
 
 export interface Emote {
@@ -103,6 +122,8 @@ export interface OverlayEmote {
   durationMs: number;
   /** When true, the overlay keeps at most 5 emotes and drops the oldest. */
   limitOnScreen: boolean;
+  /** Sender's display name to show under the emote, or null for none. */
+  from: string | null;
 }
 
 /**
@@ -121,6 +142,8 @@ export interface PickerApi {
   onSettingsChanged(callback: (settings: Settings) => void): void;
   getStatus(): Promise<ConnectionStatus>;
   onStatus(callback: (status: ConnectionStatus) => void): void;
+  /** Fires when the server drops one of your emotes for the rate limit. */
+  onLimited(callback: (notice: LimitedNotice) => void): void;
   getEmotes(): Promise<EmoteList>;
   refreshEmotes(): Promise<void>;
   onEmotesChanged(callback: (list: EmoteList) => void): void;

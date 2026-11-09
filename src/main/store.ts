@@ -24,6 +24,7 @@ const DEFAULTS: Settings = {
   emoteSets: ['global'],
   hotkey: 'CommandOrControl+Shift+E',
   favorites: [],
+  showSenderName: true,
   doNotDisturb: false,
   launchAtLogin: false,
 };
@@ -71,6 +72,7 @@ const VALIDATORS: { [K in SettingKey]: (v: unknown) => boolean } = {
   hotkey: (v) => typeof v === 'string' && HOTKEY.test(v),
   favorites: (v) =>
     Array.isArray(v) && v.length <= MAX_FAVORITES && v.every(isStoredEmote),
+  showSenderName: (v) => typeof v === 'boolean',
   doNotDisturb: (v) => typeof v === 'boolean',
   launchAtLogin: (v) => typeof v === 'boolean',
 };

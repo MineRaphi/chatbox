@@ -15,6 +15,8 @@
   let platform = $state<NodeJS.Platform>('darwin');
   // Bumped every time the window is shown, so views can refocus.
   let shownCount = $state(0);
+  // Latest rate-limit notice; a new object each time so the picker reacts.
+  let limited = $state<{ retryInMs: number } | null>(null);
 
   // Callbacks passed to window.chatbox must not return a value: the context
   // bridge copies return values back, and Svelte state proxies can't be copied.
@@ -40,6 +42,11 @@
     settings = s;
   });
 
+  // Registered once here: views mount and unmount, listeners would pile up.
+  window.chatbox.onLimited((notice) => {
+    limited = { retryInMs: notice.retryInMs };
+  });
+
   window.chatbox.onShown((requested) => {
     // Without a server there's nothing to send to: start in setup.
     view = status?.state === 'not-configured' ? 'settings' : requested;
@@ -53,6 +60,7 @@
       {list}
       {status}
       favorites={settings?.favorites ?? []}
+      {limited}
       {shownCount}
       onOpenSettings={() => (view = 'settings')}
     />

@@ -3,6 +3,7 @@ import {
   IpcChannel,
   type ConnectionStatus,
   type EmoteList,
+  type LimitedNotice,
   type PickerApi,
   type PickerView,
   type Settings,
@@ -23,6 +24,11 @@ const api: PickerApi = {
     ipcRenderer.on(
       IpcChannel.StatusChanged,
       (_event, status: ConnectionStatus) => callback(status),
+    );
+  },
+  onLimited: (callback) => {
+    ipcRenderer.on(IpcChannel.Limited, (_event, notice: LimitedNotice) =>
+      callback(notice),
     );
   },
   getEmotes: () => ipcRenderer.invoke(IpcChannel.GetEmotes),

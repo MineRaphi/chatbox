@@ -136,7 +136,11 @@ export function isEmoteId(value: unknown): value is string {
   return typeof value === 'string' && EMOTE_ID.test(value);
 }
 
-export function showEmote(emoteId: unknown, remote: boolean): boolean {
+export function showEmote(
+  emoteId: unknown,
+  remote: boolean,
+  from: string | null = null,
+): boolean {
   if (!isEmoteId(emoteId)) return false;
   const settings = getSettings();
   if (remote && settings.doNotDisturb) return false;
@@ -149,6 +153,8 @@ export function showEmote(emoteId: unknown, remote: boolean): boolean {
     sizePx: settings.overlaySizePx,
     durationMs: settings.overlayDurationMs,
     limitOnScreen: settings.limitOnScreen,
+    // Only others' emotes get a name; yours are your own preview.
+    from: remote && settings.showSenderName && from ? from : null,
   };
 
   for (const display of targetDisplays()) {
