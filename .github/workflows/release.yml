@@ -1,0 +1,112 @@
+# Builds Chatbox for macOS (Apple Silicon and Intel) and Windows.
+#
+# - Push a tag like v2.0.1 (matching "version" in package.json): the builds
+#   are attached to a draft GitHub Release. Check it, then click Publish.
+# - Run it by hand from the Actions tab: it only builds, and the files are
+#   kept as downloadable artifacts for 14 days. Nothing is released.
+#
+# Builds are unsigned on purpose; the README explains the one-time approval
+# on macOS and Windows.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '22'
+  IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: Tag matches package.json version
+        if: env.IS_RELEASE == 'true'
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match package.json version $version"
+            exit 1
+          fi
+
+  # Created once up front; the build jobs run in parallel and would otherwise
+  # race to create it.
+  prepare-release:
+    needs: check
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --draft \
+              --title "Chatbox ${GITHUB_REF_NAME#v}" --generate-notes
+          fi
+
+  build:
+    needs: [check, prepare-release]
+    # Run for manual builds too, where prepare-release is skipped.
+    if: always() && needs.check.result == 'success' && (needs.prepare-release.result == 'success' || needs.prepare-release.result == 'skipped')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS Apple Silicon
+            os: macos-latest
+            arch: arm64
+          - name: macOS Intel
+            os: macos-latest
+            arch: x64
+          - name: Windows
+            os: windows-latest
+            arch: x64
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+
+      - name: Build and attach to the draft release
+        if: env.IS_RELEASE == 'true'
+        run: npm run publish -- --arch=${{ matrix.arch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build only
+        if: env.IS_RELEASE != 'true'
+        run: npm run make -- --arch=${{ matrix.arch }}
+
+      - name: Keep the build as an artifact
+        if: env.IS_RELEASE != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: chatbox-${{ runner.os }}-${{ matrix.arch }}
+          path: |
+            out/make/**/*.zip
+            out/make/**/*.exe
+            out/make/**/RELEASES
+            out/make/**/*.nupkg
+          retention-days: 14

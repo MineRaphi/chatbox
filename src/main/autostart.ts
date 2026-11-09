@@ -43,7 +43,10 @@ async function apply(enabled: boolean): Promise<void> {
   }
   if (process.platform === 'linux') {
     await applyLinux(enabled);
-  } else {
+  } else if (app.getLoginItemSettings().openAtLogin !== enabled) {
+    // Only touch the login item when it actually has to change: macOS
+    // refuses the call outright for apps outside /Applications, which
+    // otherwise logged an error on every start.
     app.setLoginItemSettings({ openAtLogin: enabled });
   }
 }

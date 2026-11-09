@@ -36,14 +36,40 @@ The tray icon shows the state at a glance: normal when connected, dimmed when th
 
 ## Installing
 
-Pre-built downloads aren't published yet. To build an installer for your own platform:
+Download the latest version from the [Releases page](https://github.com/MineRaphi/chatbox/releases/latest).
 
-```bash
-npm install
-npm run make     # output in out/make
-```
+Chatbox isn't signed with a paid Apple or Microsoft certificate, so both systems warn about it the first time. That's expected; you approve it once.
 
-macOS gives a `.zip` with `Chatbox.app`; Windows a Squirrel installer; Linux `.deb` and `.rpm` packages.
+### macOS
+
+1. Download the zip for your Mac: `Chatbox-darwin-arm64-….zip` for Apple Silicon (M1 and newer), `Chatbox-darwin-x64-….zip` for Intel. Not sure? Apple menu → About This Mac: "Chip: Apple M…" means Apple Silicon.
+2. Double-click the zip and move `Chatbox.app` to **Applications**.
+3. Open it. macOS says it can't check the app for malware; click **Done** (not Move to Trash).
+4. Open **System Settings → Privacy & Security**, scroll down to "Chatbox was blocked", and click **Open Anyway**. Confirm with your password.
+
+From then on it opens normally. Chatbox lives in the menu bar (no Dock icon); on first start it asks for your server.
+
+### Windows
+
+1. Download `Chatbox-Setup.exe` and run it.
+2. If SmartScreen shows "Windows protected your PC", click **More info → Run anyway**.
+3. Chatbox installs for your user (no admin rights needed), adds a Start menu entry and starts in the tray. Windows often hides new tray icons behind the **^** arrow next to the clock; drag it onto the taskbar to keep it visible.
+
+If you'd rather not install anything, `Chatbox-win32-x64-….zip` is a portable version: unzip it anywhere and run `Chatbox.exe`.
+
+If Windows Defender blocks or removes files, open **Windows Security → Virus & threat protection → Protection history**, select the Chatbox entry, and choose **Allow**.
+
+### Publishing a release
+
+Releases are built by GitHub Actions (`.github/workflows/release.yml`) on real macOS and Windows machines:
+
+1. Set the new version in `package.json`, e.g. `"version": "2.0.1"`, and commit.
+2. Tag and push: `git tag v2.0.1 && git push origin main v2.0.1`.
+3. The workflow builds macOS (Apple Silicon and Intel) and Windows and attaches everything to a **draft** release. When all three builds are done, open the draft on GitHub, check it, and click **Publish**.
+
+The tag has to match the version in `package.json`, or the workflow stops. Running the workflow by hand from the Actions tab only builds, without a release; the files are then under the run's artifacts.
+
+To build only for your own machine: `npm run make` (output in `out/make`).
 
 ## Development
 

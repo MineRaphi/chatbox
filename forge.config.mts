@@ -1,27 +1,74 @@
+import { execFile } from 'node:child_process';
+import path from 'node:path';
+import { promisify } from 'node:util';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
+import { PublisherGitHub } from '@electron-forge/publisher-github';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
+const run = promisify(execFile);
+
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    name: 'Chatbox',
+    appBundleId: 'com.mineraphi.chatbox',
+    appCategoryType: 'public.app-category.social-networking',
     icon: './icons/chatbox',
     // Tray icons are loaded from disk at runtime, so they ship outside the asar.
     extraResource: ['./assets'],
     // Menu-bar app on macOS: no dock icon.
     extendInfo: { LSUIElement: true },
+    win32metadata: {
+      CompanyName: 'MineRaphi',
+      ProductName: 'Chatbox',
+      FileDescription: 'Chatbox',
+    },
   },
   rebuildConfig: {},
+  hooks: {
+    // Builds are unsigned (no Apple Developer account). Packaging edits
+    // Info.plist and the fuses after Electron's own ad-hoc signature, which
+    // leaves the bundle's signature invalid: downloaded copies then fail
+    // with "Chatbox is damaged". An ad-hoc signature over the finished
+    // bundle turns that into the "unidentified developer" prompt, which
+    // people can approve in System Settings.
+    postPackage: async (_config, { platform, outputPaths }) => {
+      if (platform !== 'darwin') return;
+      for (const dir of outputPaths) {
+        const app = path.join(dir, 'Chatbox.app');
+        await run('codesign', ['--force', '--deep', '--sign', '-', app]);
+        await run('codesign', ['--verify', '--deep', '--strict', app]);
+      }
+    },
+  },
   makers: [
-    new MakerSquirrel({}),
-    new MakerZIP({}, ['darwin']),
+    // Windows: Chatbox-Setup.exe, installs per user without admin rights.
+    new MakerSquirrel({
+      name: 'chatbox',
+      setupExe: 'Chatbox-Setup.exe',
+      setupIcon: './icons/chatbox.ico',
+      noMsi: true,
+    }),
+    // macOS download, and a portable Windows build for people who'd rather
+    // not run an installer.
+    new MakerZIP({}, ['darwin', 'win32']),
     new MakerRpm({}),
     new MakerDeb({}),
+  ],
+  publishers: [
+    // `npm run publish` uploads the build to a draft release for the
+    // version in package.json; it's only published once you approve it.
+    new PublisherGitHub({
+      repository: { owner: 'MineRaphi', name: 'chatbox' },
+      draft: true,
+      prerelease: false,
+    }),
   ],
   plugins: [
     new VitePlugin({
