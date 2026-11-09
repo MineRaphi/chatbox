@@ -68,11 +68,37 @@ const config: ForgeConfig = {
     // macOS download, and a portable Windows build for people who'd rather
     // not run an installer.
     new MakerZIP({}, ['darwin', 'win32']),
-    new MakerRpm({}),
-    new MakerDeb({}),
+    // Linux: .deb for Ubuntu/Debian, .rpm for Fedora and similar.
+    new MakerDeb({
+      options: {
+        name: 'chatbox',
+        productName: 'Chatbox',
+        genericName: 'Emote overlay',
+        // The packaged executable is named after packagerConfig.name.
+        bin: 'Chatbox',
+        maintainer: 'MineRaphi',
+        homepage: 'https://github.com/MineRaphi/chatbox',
+        icon: './icons/chatbox.png',
+        section: 'net',
+        categories: ['Network'],
+      },
+    }),
+    new MakerRpm({
+      options: {
+        name: 'chatbox',
+        productName: 'Chatbox',
+        genericName: 'Emote overlay',
+        // The packaged executable is named after packagerConfig.name.
+        bin: 'Chatbox',
+        homepage: 'https://github.com/MineRaphi/chatbox',
+        license: 'ISC',
+        icon: './icons/chatbox.png',
+        categories: ['Network'],
+      },
+    }),
   ],
   publishers: [
-    // `npm run publish` uploads the build to a draft release for the
+    // `npm run release` uploads the build to a draft release for the
     // version in package.json; it's only published once you approve it.
     new PublisherGitHub({
       repository: { owner: 'MineRaphi', name: 'chatbox' },

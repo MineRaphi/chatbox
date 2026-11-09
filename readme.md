@@ -59,13 +59,24 @@ If you'd rather not install anything, `Chatbox-win32-x64-….zip` is a portable 
 
 If Windows Defender blocks or removes files, open **Windows Security → Virus & threat protection → Protection history**, select the Chatbox entry, and choose **Allow**.
 
+### Linux
+
+64-bit Intel/AMD (x86_64) only for now.
+
+- **Ubuntu, Debian, Mint:** download `chatbox_…_amd64.deb`, then `sudo apt install ./chatbox_*_amd64.deb`
+- **Fedora, openSUSE:** download `chatbox-….x86_64.rpm`, then `sudo dnf install ./chatbox-*.x86_64.rpm`
+
+Start it from the app menu or with `chatbox`. To remove it: `sudo apt remove chatbox` or `sudo dnf remove chatbox`.
+
+On GNOME (Ubuntu's default desktop) the tray icon needs the AppIndicator extension; Ubuntu ships it enabled, other GNOME setups may need it installed.
+
 ### Publishing a release
 
-Releases are built by GitHub Actions (`.github/workflows/release.yml`) on real macOS and Windows machines:
+Releases are built by GitHub Actions (`.github/workflows/release.yml`) on real macOS, Windows and Linux machines:
 
 1. Set the new version in `package.json`, e.g. `"version": "2.0.1"`, and commit.
 2. Tag and push: `git tag v2.0.1 && git push origin main v2.0.1`.
-3. The workflow builds macOS (Apple Silicon and Intel) and Windows and attaches everything to a **draft** release. When all three builds are done, open the draft on GitHub, check it, and click **Publish**.
+3. The workflow builds macOS (Apple Silicon and Intel), Windows and Linux and attaches everything to a **draft** release. When all four builds are done, open the draft on GitHub, check it, and click **Publish**.
 
 The tag has to match the version in `package.json`, or the workflow stops. A version with a suffix, like `2.0.0-beta` (tag `v2.0.0-beta`), becomes a pre-release on GitHub, so the Releases page's "latest" link keeps pointing at the last stable version. Running the workflow by hand from the Actions tab only builds, without a release; the files are then under the run's artifacts.
 

@@ -1,4 +1,4 @@
-# Builds Chatbox for macOS (Apple Silicon and Intel) and Windows.
+# Builds Chatbox for macOS (Apple Silicon and Intel), Windows and Linux.
 #
 # - Push a tag like v2.0.1 (matching "version" in package.json): the builds
 #   are attached to a draft GitHub Release. Check it, then click Publish.
@@ -82,6 +82,9 @@ jobs:
           - name: Windows
             os: windows-latest
             arch: x64
+          - name: Linux
+            os: ubuntu-latest
+            arch: x64
     name: Build (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     steps:
@@ -92,15 +95,39 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: Build and attach to the draft release
+      # The .rpm maker needs rpmbuild; .deb tools are already there.
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm
+
+      # Build first and test; for a release, the same files are uploaded
+      # afterwards (release --from-make), so nothing untested gets published.
+      - name: Build
+        run: npm run make -- --arch=${{ matrix.arch }}
+
+      # Install the .deb on this real Ubuntu machine and start the app on a
+      # virtual display. Still running after 30 s (timeout's exit code 124)
+      # means it started; anything else is a crash.
+      - name: Smoke test the Linux package
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install -y xvfb
+          sudo apt-get install -y ./out/make/deb/x64/*.deb
+          set +e
+          xvfb-run -a timeout 30 chatbox
+          code=$?
+          set -e
+          if [ "$code" -ne 124 ]; then
+            echo "::error::chatbox exited with code $code within 30 s"
+            exit 1
+          fi
+          echo "chatbox ran for 30 s without crashing"
+
+      - name: Attach to the draft release
         if: env.IS_RELEASE == 'true'
-        run: npm run publish -- --arch=${{ matrix.arch }}
+        run: npm run release -- --from-make
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build only
-        if: env.IS_RELEASE != 'true'
-        run: npm run make -- --arch=${{ matrix.arch }}
 
       - name: Keep the build as an artifact
         if: env.IS_RELEASE != 'true'
@@ -112,4 +139,6 @@ jobs:
             out/make/**/*.exe
             out/make/**/RELEASES
             out/make/**/*.nupkg
+            out/make/**/*.deb
+            out/make/**/*.rpm
           retention-days: 14
