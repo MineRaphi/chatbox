@@ -29,6 +29,15 @@ const rel = (tag, { prerelease = false, draft = false, files = [] } = {}) => ({
     browser_download_url: `${base}/download/${tag}/${name}`,
   })),
 });
+// Tests must not depend on the machine they run on (CI runs on Linux).
+const mac = {
+  platform: 'darwin',
+  arch: 'arm64',
+  squirrel: false,
+  appImage: false,
+  debian: false,
+};
+
 const macFiles = (ver) => [
   `Chatbox-darwin-arm64-${ver}.zip`,
   `Chatbox-darwin-x64-${ver}.zip`,
@@ -43,13 +52,10 @@ const feed = [
 ];
 
 test('stable only: newest stable, never drafts', () => {
-  const u = m.pickUpdate(feed, '2.0.1-beta', false);
+  const u = m.pickUpdate(feed, '2.0.1-beta', false, mac);
   assert.equal(u.version, '2.0.2');
   assert.equal(u.prerelease, false);
-  assert.equal(
-    u.fileName,
-    `Chatbox-darwin-${process.arch === 'arm64' ? 'arm64' : 'x64'}-2.0.2.zip`,
-  );
+  assert.equal(u.fileName, 'Chatbox-darwin-arm64-2.0.2.zip');
   assert.ok(u.downloadUrl.startsWith(`${base}/download/v2.0.2/`));
 });
 
@@ -95,4 +101,52 @@ test('garbage from the API throws, odd entries are skipped', () => {
     m.pickUpdate({ message: 'rate limited' }, '2.0.0', false),
   );
   assert.equal(m.pickUpdate([null, 42, { tag_name: 5 }], '2.0.0', false), null);
+});
+
+test('the right file for each platform and install type', () => {
+  // File names as the release workflow produces them (from v2.0.1-beta).
+  const files = [
+    'Chatbox-darwin-arm64-2.0.2.zip',
+    'Chatbox-darwin-x64-2.0.2.zip',
+    'Chatbox-Setup.exe',
+    'Chatbox-win32-x64-2.0.2.zip',
+    'chatbox-2.0.2-full.nupkg',
+    'RELEASES',
+    'Chatbox-2.0.2-x64.AppImage',
+    'chatbox_2.0.2_amd64.deb',
+    'chatbox-2.0.2-1.x86_64.rpm',
+  ];
+  const release = [rel('v2.0.2', { files })];
+  const pick = (install) =>
+    m.pickUpdate(release, '2.0.1', false, { ...mac, ...install }).fileName;
+
+  assert.equal(
+    pick({ platform: 'darwin', arch: 'arm64' }),
+    'Chatbox-darwin-arm64-2.0.2.zip',
+  );
+  assert.equal(
+    pick({ platform: 'darwin', arch: 'x64' }),
+    'Chatbox-darwin-x64-2.0.2.zip',
+  );
+  assert.equal(
+    pick({ platform: 'win32', arch: 'x64', squirrel: true }),
+    'Chatbox-Setup.exe',
+  );
+  assert.equal(
+    pick({ platform: 'win32', arch: 'x64', squirrel: false }),
+    'Chatbox-win32-x64-2.0.2.zip',
+  );
+  assert.equal(
+    pick({ platform: 'linux', arch: 'x64', appImage: true, debian: true }),
+    'Chatbox-2.0.2-x64.AppImage',
+  );
+  assert.equal(
+    pick({ platform: 'linux', arch: 'x64', debian: true }),
+    'chatbox_2.0.2_amd64.deb',
+  );
+  assert.equal(
+    pick({ platform: 'linux', arch: 'x64', debian: false }),
+    'chatbox-2.0.2-1.x86_64.rpm',
+  );
+  assert.equal(pick({ platform: 'freebsd', arch: 'x64' }), null);
 });

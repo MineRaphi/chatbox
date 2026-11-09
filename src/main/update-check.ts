@@ -54,30 +54,51 @@ export function compareVersions(a: Version, b: Version): number {
 // --- Picking the right download ------------------------------------------
 
 /** How this copy was installed decides which file fits. */
-function assetPattern(): RegExp | null {
-  const arch = process.arch === 'arm64' ? 'arm64' : 'x64';
-  switch (process.platform) {
+/** What decides which download fits this copy of Chatbox. */
+export interface InstallInfo {
+  platform: NodeJS.Platform;
+  arch: string;
+  /** Windows: installed with Chatbox-Setup.exe (Squirrel), not the zip. */
+  squirrel: boolean;
+  /** Linux: running from an AppImage. */
+  appImage: boolean;
+  /** Linux: a Debian-based system (.deb rather than .rpm). */
+  debian: boolean;
+}
+
+/** The release file that fits `info`, as a pattern on file names. */
+export function assetPatternFor(info: InstallInfo): RegExp | null {
+  const arch = info.arch === 'arm64' ? 'arm64' : 'x64';
+  switch (info.platform) {
     case 'darwin':
       return new RegExp(`^Chatbox-darwin-${arch}-.+\\.zip$`);
-    case 'win32': {
-      // Installed with Chatbox-Setup.exe: Squirrel's Update.exe sits next
-      // to the app folder. Otherwise it's the portable zip.
-      const updateExe = path.resolve(
-        path.dirname(process.execPath),
-        '..',
-        'Update.exe',
-      );
-      return existsSync(updateExe)
+    case 'win32':
+      return info.squirrel
         ? /^Chatbox-Setup\.exe$/
         : /^Chatbox-win32-x64-.+\.zip$/;
-    }
     case 'linux':
-      if (process.env.APPIMAGE) return /^Chatbox-.+-x64\.AppImage$/;
-      if (existsSync('/etc/debian_version')) return /^chatbox_.+_amd64\.deb$/;
+      if (info.appImage) return /^Chatbox-.+-x64\.AppImage$/;
+      if (info.debian) return /^chatbox_.+_amd64\.deb$/;
       return /^chatbox-.+\.x86_64\.rpm$/;
     default:
       return null;
   }
+}
+
+/** How this running copy was installed. */
+export function currentInstall(): InstallInfo {
+  return {
+    platform: process.platform,
+    arch: process.arch,
+    // Squirrel puts Update.exe next to the app's version folder.
+    squirrel:
+      process.platform === 'win32' &&
+      existsSync(
+        path.resolve(path.dirname(process.execPath), '..', 'Update.exe'),
+      ),
+    appImage: Boolean(process.env.APPIMAGE),
+    debian: existsSync('/etc/debian_version'),
+  };
 }
 
 interface GitHubRelease {
@@ -96,6 +117,7 @@ export function pickUpdate(
   releases: unknown,
   current: string,
   includeBeta: boolean,
+  install: InstallInfo = currentInstall(),
 ): AvailableUpdate | null {
   if (!Array.isArray(releases))
     throw new Error('unexpected answer from GitHub');
@@ -119,7 +141,7 @@ export function pickUpdate(
   }
   if (!best) return null;
 
-  const pattern = assetPattern();
+  const pattern = assetPatternFor(install);
   const asset = (best.release.assets ?? []).find(
     (a) =>
       typeof a.name === 'string' &&
