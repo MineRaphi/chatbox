@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import type { ForgeConfig } from '@electron-forge/shared-types';
@@ -13,10 +14,19 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 const run = promisify(execFile);
 
+const { version } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as { version: string };
+// `2.0.0-beta` is a pre-release. Windows file versions must be plain numbers,
+// so the build number keeps only the `2.0.0` part.
+const isPrerelease = version.includes('-');
+const numericVersion = version.split('-')[0]!;
+
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     name: 'Chatbox',
+    buildVersion: numericVersion,
     appBundleId: 'com.mineraphi.chatbox',
     appCategoryType: 'public.app-category.social-networking',
     icon: './icons/chatbox',
@@ -67,7 +77,7 @@ const config: ForgeConfig = {
     new PublisherGitHub({
       repository: { owner: 'MineRaphi', name: 'chatbox' },
       draft: true,
-      prerelease: false,
+      prerelease: isPrerelease,
     }),
   ],
   plugins: [

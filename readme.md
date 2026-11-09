@@ -67,7 +67,7 @@ Releases are built by GitHub Actions (`.github/workflows/release.yml`) on real m
 2. Tag and push: `git tag v2.0.1 && git push origin main v2.0.1`.
 3. The workflow builds macOS (Apple Silicon and Intel) and Windows and attaches everything to a **draft** release. When all three builds are done, open the draft on GitHub, check it, and click **Publish**.
 
-The tag has to match the version in `package.json`, or the workflow stops. Running the workflow by hand from the Actions tab only builds, without a release; the files are then under the run's artifacts.
+The tag has to match the version in `package.json`, or the workflow stops. A version with a suffix, like `2.0.0-beta` (tag `v2.0.0-beta`), becomes a pre-release on GitHub, so the Releases page's "latest" link keeps pointing at the last stable version. Running the workflow by hand from the Actions tab only builds, without a release; the files are then under the run's artifacts.
 
 To build only for your own machine: `npm run make` (output in `out/make`).
 
