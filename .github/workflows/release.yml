@@ -95,33 +95,55 @@ jobs:
           cache: npm
       - run: npm ci
 
-      # The .rpm maker needs rpmbuild; .deb tools are already there.
+      # rpmbuild for the .rpm, mksquashfs for the AppImage, xvfb for the
+      # startup tests; plus the pinned, checksum-verified AppImage runtime.
       - name: Install Linux packaging tools
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y rpm
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm squashfs-tools xvfb
+          scripts/fetch-appimage-runtime.sh
 
       # Build first and test; for a release, the same files are uploaded
       # afterwards (release --from-make), so nothing untested gets published.
       - name: Build
         run: npm run make -- --arch=${{ matrix.arch }}
 
-      # Install the .deb on this real Ubuntu machine and start the app on a
-      # virtual display. Still running after 30 s (timeout's exit code 124)
-      # means it started; anything else is a crash.
-      - name: Smoke test the Linux package
+      # Startup tests on this real x64 Ubuntu machine: each starts the app
+      # on a virtual display and fails if it crashes within 30 s.
+      - name: Smoke test the .deb
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get install -y xvfb
           sudo apt-get install -y ./out/make/deb/x64/*.deb
-          set +e
-          xvfb-run -a timeout 30 chatbox
-          code=$?
-          set -e
-          if [ "$code" -ne 124 ]; then
-            echo "::error::chatbox exited with code $code within 30 s"
-            exit 1
-          fi
-          echo "chatbox ran for 30 s without crashing"
+          scripts/smoke-test.sh chatbox
+          sudo apt-get remove -y chatbox
+
+      # AppImages can't ship Chromium's setuid sandbox helper and rely on
+      # unprivileged user namespaces, which Arch and NixOS allow but Ubuntu
+      # 24.04 restricts; allow them here to test like those systems.
+      - name: Allow unprivileged user namespaces (like Arch and NixOS)
+        if: runner.os == 'Linux'
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Smoke test the AppImage
+        if: runner.os == 'Linux'
+        run: |
+          appimage="$(find out/make -name '*.AppImage' | head -1)"
+          chmod +x "$appimage"
+          # No FUSE needed: unpack to a temp dir and run from there.
+          APPIMAGE_EXTRACT_AND_RUN=1 scripts/smoke-test.sh "$appimage"
+
+      # How the NixOS friends will run it: nix's appimage-run.
+      - name: Install Nix
+        if: runner.os == 'Linux'
+        uses: cachix/install-nix-action@v31
+
+      - name: Smoke test the AppImage with nix appimage-run
+        if: runner.os == 'Linux'
+        run: |
+          appimage="$(find out/make -name '*.AppImage' | head -1)"
+          nix build --no-link nixpkgs#appimage-run   # download outside the timed run
+          SECONDS_TO_RUN=45 scripts/smoke-test.sh nix run nixpkgs#appimage-run -- "$appimage"
 
       - name: Attach to the draft release
         if: env.IS_RELEASE == 'true'
@@ -141,4 +163,5 @@ jobs:
             out/make/**/*.nupkg
             out/make/**/*.deb
             out/make/**/*.rpm
+            out/make/**/*.AppImage
           retention-days: 14

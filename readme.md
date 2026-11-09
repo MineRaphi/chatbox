@@ -68,6 +68,20 @@ If Windows Defender blocks or removes files, open **Windows Security → Virus &
 
 Start it from the app menu or with `chatbox`. To remove it: `sudo apt remove chatbox` or `sudo dnf remove chatbox`.
 
+**Arch, NixOS and other distributions:** use the AppImage, `Chatbox-….AppImage`, a single file that needs no installation.
+
+- **Arch and most others:** `chmod +x Chatbox-*.AppImage`, then run it. AppImages need FUSE (`fuse3` on Arch); without it, run it with `--appimage-extract-and-run`.
+- **NixOS:** run it with `nix run nixpkgs#appimage-run -- ./Chatbox-*.AppImage`, or add `appimage-run` to `environment.systemPackages` and use `appimage-run ./Chatbox-*.AppImage`. To run AppImages directly (needed for **Launch at login**, which starts the AppImage file itself), set in `configuration.nix`:
+
+  ```nix
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
+  };
+  ```
+
+The AppImage uses Chromium's user-namespace sandbox, which Arch and NixOS allow. Ubuntu 24.04 and newer restrict it, so on Ubuntu use the `.deb`.
+
 On GNOME (Ubuntu's default desktop) the tray icon needs the AppIndicator extension; Ubuntu ships it enabled, other GNOME setups may need it installed.
 
 ### Publishing a release

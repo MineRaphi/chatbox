@@ -8,6 +8,7 @@ import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
 import { PublisherGitHub } from '@electron-forge/publisher-github';
+import { MakerAppImage } from '@reforged/maker-appimage';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
@@ -81,6 +82,21 @@ const config: ForgeConfig = {
         icon: './icons/chatbox.png',
         section: 'net',
         categories: ['Network'],
+      },
+    }),
+    // Linux: one-file AppImage for everything else (Arch, NixOS via
+    // appimage-run, ...). The runtime is pinned and checksum-verified by
+    // scripts/fetch-appimage-runtime.sh; if it's missing the build fails
+    // rather than downloading an unpinned one.
+    new MakerAppImage({
+      options: {
+        name: 'chatbox',
+        productName: 'Chatbox',
+        genericName: 'Emote overlay',
+        bin: 'Chatbox',
+        icon: './icons/chatbox.png',
+        categories: ['Network'],
+        runtime: path.resolve('build/appimage-runtime-x86_64'),
       },
     }),
     new MakerRpm({
