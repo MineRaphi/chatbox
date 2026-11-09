@@ -1,3 +1,5 @@
+import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
+import path from 'node:path';
 import { app, globalShortcut } from 'electron';
 import started from 'electron-squirrel-startup';
 import { initAutostart } from './autostart';
@@ -10,6 +12,23 @@ import { initPicker, showPicker } from './picker';
 import { getSetting } from './store';
 import { createTray } from './tray';
 import { initUpdates } from './updates';
+
+// Dev runs get their own settings folder ("Chatbox Dev"), so `npm start`
+// never touches the installed app's settings and both can run side by
+// side (the single-instance lock is per settings folder). The first dev
+// start copies the installed app's settings and emote cache once.
+if (!app.isPackaged) {
+  const appData = app.getPath('appData');
+  const devDir = path.join(appData, 'Chatbox Dev');
+  if (!existsSync(devDir)) {
+    mkdirSync(devDir, { recursive: true });
+    for (const file of ['config.json', 'emote-cache.json']) {
+      const from = path.join(app.getPath('userData'), file);
+      if (existsSync(from)) copyFileSync(from, path.join(devDir, file));
+    }
+  }
+  app.setPath('userData', devDir);
+}
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {

@@ -111,7 +111,7 @@ npm run check      # typecheck (tsc + svelte-check) and lint (oxlint + oxfmt)
 npm run lint:fix   # format and auto-fix
 ```
 
-Dev runs add a **Debug** submenu to the tray for sending test emotes locally or through the server, including bursts of 5, 8, 10 and 15.
+Dev runs use their own settings folder, **Chatbox Dev** (next to the installed app's), so `npm start` and an installed Chatbox don't touch each other's settings and can run at the same time; the first dev start copies the installed app's settings once. Dev runs add a **Debug** submenu to the tray for sending test emotes locally or through the server, including bursts of 5, 8, 10 and 15.
 
 ### Project layout
 
