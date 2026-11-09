@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { BrowserWindow, screen, type Display } from 'electron';
+import { BrowserWindow, app, screen, type Display } from 'electron';
 import { IpcChannel, type OverlayEmote } from '../shared/ipc';
 import { getSettings } from './store';
 
@@ -17,6 +17,12 @@ interface OverlayWindow {
 
 const overlays = new Map<number, OverlayWindow>();
 const recentRemote: number[] = [];
+
+// Overlays live as long as the app; only quitting may close them.
+let quitting = false;
+app.on('before-quit', () => {
+  quitting = true;
+});
 
 function createOverlay(display: Display): OverlayWindow {
   const { x, y, width, height } = display.workArea;
@@ -64,6 +70,26 @@ function createOverlay(display: Display): OverlayWindow {
     win.showInactive();
   });
 
+  // Some Linux desktops (e.g. GNOME on Wayland) list the overlay like a
+  // normal window, where it can be closed. Refuse, unless the app quits.
+  win.on('close', (event) => {
+    if (!quitting) event.preventDefault();
+  });
+  // If it's gone anyway, forget it; it's recreated when next needed.
+  win.on('closed', () => {
+    if (overlays.get(display.id)?.win === win) overlays.delete(display.id);
+  });
+  // A crashed overlay page would silently drop every emote: reload it.
+  win.webContents.on('render-process-gone', () => {
+    overlay.ready = false;
+    if (!win.isDestroyed()) {
+      win.webContents.once('did-finish-load', () => {
+        overlay.ready = true;
+      });
+      win.webContents.reload();
+    }
+  });
+
   if (OVERLAY_VITE_DEV_SERVER_URL) {
     void win.loadURL(OVERLAY_VITE_DEV_SERVER_URL);
   } else {
@@ -76,8 +102,9 @@ function createOverlay(display: Display): OverlayWindow {
 }
 
 function destroyOverlay(displayId: number): void {
-  overlays.get(displayId)?.win.destroy();
+  const win = overlays.get(displayId)?.win;
   overlays.delete(displayId);
+  if (win && !win.isDestroyed()) win.destroy();
 }
 
 /** Make sure there is exactly one overlay per display, sized to its work area. */
@@ -91,7 +118,7 @@ function syncDisplays(): void {
   }
   for (const display of displays) {
     const existing = overlays.get(display.id);
-    if (existing) {
+    if (existing && !existing.win.isDestroyed()) {
       existing.win.setBounds(display.workArea);
     } else {
       overlays.set(display.id, createOverlay(display));
@@ -159,7 +186,13 @@ export function showEmote(
 
   for (const display of targetDisplays()) {
     const overlay = overlays.get(display.id);
-    if (overlay?.ready) {
+    if (!overlay || overlay.win.isDestroyed()) {
+      // Closed or crashed away: recreate it. This emote is lost, the next
+      // one shows again; far better than crashing the app.
+      overlays.set(display.id, createOverlay(display));
+      continue;
+    }
+    if (overlay.ready) {
       overlay.win.webContents.send(IpcChannel.OverlayShow, emote);
     }
   }
