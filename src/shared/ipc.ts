@@ -18,6 +18,10 @@ export const IpcChannel = {
   GetHotkey: 'hotkey:get',
   HotkeyChanged: 'hotkey:changed',
   SetHotkeyRecording: 'hotkey:recording',
+  GetUpdateStatus: 'updates:getStatus',
+  CheckForUpdates: 'updates:check',
+  UpdateStatusChanged: 'updates:status',
+  OpenUpdate: 'updates:open',
   PickerShown: 'picker:shown',
   OverlayShow: 'overlay:show',
 } as const;
@@ -54,6 +58,11 @@ export interface Settings {
   /** Drop incoming emotes (your own previews still show). */
   doNotDisturb: boolean;
   launchAtLogin: boolean;
+  /** Offer beta versions (pre-releases) as updates too. */
+  includeBetaUpdates: boolean;
+  /** Internal: the newest version we already notified about, so the
+   *  notification shows once per version, not on every start. */
+  notifiedUpdateVersion: string;
 }
 
 export const MAX_FAVORITES = 10;
@@ -115,6 +124,28 @@ export interface EmoteList {
   loading: boolean;
 }
 
+export interface AvailableUpdate {
+  /** e.g. `2.0.2` or `2.0.2-beta`. */
+  version: string;
+  prerelease: boolean;
+  /** Release page with the notes. */
+  pageUrl: string;
+  /** The download for this platform, or the release page if none matched. */
+  downloadUrl: string;
+  /** File name of the download, when one matched. */
+  fileName: string | null;
+}
+
+export interface UpdateStatus {
+  state: 'idle' | 'checking' | 'up-to-date' | 'available' | 'error';
+  /** The running version. */
+  current: string;
+  latest: AvailableUpdate | null;
+  /** When the last check finished (ms since epoch). */
+  checkedAt: number | null;
+  error: string | null;
+}
+
 /** One emote to show in an overlay window. */
 export interface OverlayEmote {
   url: string;
@@ -158,6 +189,11 @@ export interface PickerApi {
   onHotkeyChanged(callback: (hotkey: string | null) => void): void;
   /** Pause the global hotkey while the user records a new one. */
   setHotkeyRecording(recording: boolean): Promise<void>;
+  getUpdateStatus(): Promise<UpdateStatus>;
+  checkForUpdates(): Promise<void>;
+  onUpdateStatus(callback: (status: UpdateStatus) => void): void;
+  /** Open the download or the release notes of the available update. */
+  openUpdate(what: 'download' | 'notes'): Promise<void>;
   /** Fires every time the picker window is shown, with the view to open. */
   onShown(callback: (view: PickerView) => void): void;
 }

@@ -9,6 +9,7 @@ import { initOverlays } from './overlay';
 import { initPicker, showPicker } from './picker';
 import { getSetting } from './store';
 import { createTray } from './tray';
+import { initUpdates } from './updates';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -20,6 +21,13 @@ if (process.platform === 'linux') {
   app.commandLine.appendSwitch('enable-transparent-visuals');
   // Global shortcuts on Wayland go through the desktop portal.
   app.commandLine.appendSwitch('enable-features', 'GlobalShortcutsPortal');
+}
+
+// Windows only shows notifications from an installed app if it uses the
+// same AppUserModelID as its Start menu shortcut; Squirrel names it
+// com.squirrel.<package name>.<exe name>.
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.squirrel.chatbox.Chatbox');
 }
 
 // Only one instance: a second launch opens the picker of the running one.
@@ -64,6 +72,7 @@ if (!app.requestSingleInstanceLock()) {
     initHotkey();
     initAutostart();
     void initEmotes();
+    initUpdates();
 
     // First run: there's no window to find, so open setup right away.
     if (!getSetting('serverHost')) showPicker('settings');

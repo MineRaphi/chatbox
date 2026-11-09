@@ -4,6 +4,7 @@ import { getStatus, sendEmote } from './connection';
 import { getEmotes, refreshEmotes, resolveSet } from './emotes';
 import { toggleFavorite } from './favorites';
 import { getHotkey, setRecording } from './hotkey';
+import { checkForUpdates, getUpdateStatus, openUpdate } from './updates';
 import { getSettings, isSettingKey, setSetting } from './store';
 
 /** Handlers for requests coming from renderers. Push events are sent elsewhere. */
@@ -34,6 +35,14 @@ export function registerIpc(): void {
   ipcMain.handle(IpcChannel.ResolveEmoteSet, (_event, input: unknown) =>
     resolveSet(input),
   );
+
+  ipcMain.handle(IpcChannel.GetUpdateStatus, () => getUpdateStatus());
+
+  ipcMain.handle(IpcChannel.CheckForUpdates, () => checkForUpdates());
+
+  ipcMain.handle(IpcChannel.OpenUpdate, (_event, what: unknown) => {
+    if (what === 'download' || what === 'notes') openUpdate(what);
+  });
 
   ipcMain.handle(IpcChannel.ToggleFavorite, (_event, emote: unknown) =>
     toggleFavorite(emote),

@@ -84,6 +84,10 @@ The AppImage uses Chromium's user-namespace sandbox, which Arch and NixOS allow.
 
 On GNOME (Ubuntu's default desktop) the tray icon needs the AppIndicator extension; Ubuntu ships it enabled, other GNOME setups may need it installed.
 
+### Updates
+
+Chatbox checks GitHub for new versions at startup and every 6 hours. When there is one, you get a notification once, and the tray menu and **Settings → Updates** offer the download for your system (it doesn't install anything by itself). Beta versions are only offered if **Include beta versions** is on.
+
 ### Publishing a release
 
 Releases are built by GitHub Actions (`.github/workflows/release.yml`) on real macOS, Windows and Linux machines:

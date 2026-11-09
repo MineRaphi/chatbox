@@ -4,6 +4,7 @@
     EmoteList,
     PickerView,
     Settings as SettingsData,
+    UpdateStatus,
   } from '../../shared/ipc';
   import Picker from './Picker.svelte';
   import Settings from './Settings.svelte';
@@ -17,6 +18,7 @@
   let shownCount = $state(0);
   // Latest rate-limit notice; a new object each time so the picker reacts.
   let limited = $state<{ retryInMs: number } | null>(null);
+  let update = $state<UpdateStatus | null>(null);
 
   // Callbacks passed to window.chatbox must not return a value: the context
   // bridge copies return values back, and Svelte state proxies can't be copied.
@@ -40,6 +42,13 @@
   });
   window.chatbox.onSettingsChanged((s) => {
     settings = s;
+  });
+
+  void window.chatbox.getUpdateStatus().then((u) => {
+    update = u;
+  });
+  window.chatbox.onUpdateStatus((u) => {
+    update = u;
   });
 
   // Registered once here: views mount and unmount, listeners would pile up.
@@ -69,6 +78,7 @@
       {settings}
       {status}
       setNames={list?.setNames ?? {}}
+      {update}
       {platform}
       {shownCount}
       onBack={() => (view = 'picker')}

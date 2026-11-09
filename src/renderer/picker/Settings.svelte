@@ -5,6 +5,7 @@
     MonitorTarget,
     SettingKey,
     Settings,
+    UpdateStatus,
   } from '../../shared/ipc';
   import HotkeyRecorder from './HotkeyRecorder.svelte';
   import Segmented from './Segmented.svelte';
@@ -16,11 +17,13 @@
     status: ConnectionStatus | null;
     /** Display names of cached sets, by ID. */
     setNames: Record<string, string>;
+    update: UpdateStatus | null;
     platform: NodeJS.Platform;
     shownCount: number;
     onBack: () => void;
   }
-  const { settings, status, setNames, platform, shownCount, onBack }: Props =
+  const { settings, status, setNames,
+    update, platform, shownCount, onBack }: Props =
     $props();
 
   const SIZES = [
@@ -127,7 +130,15 @@
     }
   }
 
-  function setLabel(id: string): string {
+  function checkedAgo(at: number | null): string {
+    if (!at) return '';
+    const minutes = Math.round((Date.now() - at) / 60_000);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes} min ago`;
+    return `${Math.round(minutes / 60)} h ago`;
+  }
+
+    function setLabel(id: string): string {
     if (id === 'global') return '7TV global';
     return setNames[id] ?? id;
   }
@@ -348,7 +359,70 @@
       {/if}
     </section>
 
-    <!-- General -->
+    <!-- Updates -->
+    <section class="flex flex-col gap-2 border-b border-zinc-800 p-4">
+      <h2 class="text-xs font-semibold tracking-wide text-zinc-500 uppercase">
+        Updates
+      </h2>
+      <p class="text-sm">
+        Chatbox {update?.current ?? ''}
+      </p>
+      {#if update?.state === 'available' && update.latest}
+        <div class="flex flex-col gap-2 rounded-md bg-emerald-950/60 p-3" role="status">
+          <p class="text-sm text-emerald-200">
+            Chatbox {update.latest.version} is available{update.latest.prerelease
+              ? ' (beta)'
+              : ''}.
+          </p>
+          <div class="flex gap-2">
+            <button
+              class="rounded-md bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-white"
+              onclick={() => window.chatbox.openUpdate('download')}
+            >
+              Download
+            </button>
+            <button
+              class="rounded-md bg-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-700"
+              onclick={() => window.chatbox.openUpdate('notes')}
+            >
+              What's new
+            </button>
+          </div>
+          {#if update.latest.fileName}
+            <p class="text-xs text-zinc-400">Downloads {update.latest.fileName}</p>
+          {/if}
+        </div>
+      {:else}
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-xs text-zinc-500">
+            {#if update?.state === 'checking'}
+              Checking…
+            {:else if update?.state === 'up-to-date'}
+              Up to date · checked {checkedAgo(update.checkedAt)}
+            {:else if update?.state === 'error'}
+              Couldn't check: {update.error}
+            {:else}
+              Not checked yet
+            {/if}
+          </p>
+          <button
+            class="shrink-0 rounded-md bg-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-700 disabled:opacity-50"
+            disabled={update?.state === 'checking'}
+            onclick={() => window.chatbox.checkForUpdates()}
+          >
+            Check now
+          </button>
+        </div>
+      {/if}
+      <Toggle
+        label="Include beta versions"
+        hint="Also offer test versions before they're final."
+        checked={settings.includeBetaUpdates}
+        onChange={(v) => save('includeBetaUpdates', v)}
+      />
+    </section>
+
+        <!-- General -->
     <section class="flex flex-col gap-2 p-4">
       <h2 class="text-xs font-semibold tracking-wide text-zinc-500 uppercase">
         General

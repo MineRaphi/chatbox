@@ -23,6 +23,7 @@
     "lint": "oxlint && oxfmt --check",
     "lint:fix": "oxlint --fix && oxfmt --write",
     "typecheck": "tsc --noEmit && svelte-check --tsconfig ./tsconfig.json",
+    "test": "node --test \"test/**/*.test.mjs\"",
     "check": "npm run typecheck && npm run lint"
   },
   "devDependencies": {

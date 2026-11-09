@@ -6,6 +6,7 @@ import {
   type LimitedNotice,
   type PickerApi,
   type PickerView,
+  type UpdateStatus,
   type Settings,
 } from '../shared/ipc';
 
@@ -51,6 +52,15 @@ const api: PickerApi = {
   },
   setHotkeyRecording: (recording) =>
     ipcRenderer.invoke(IpcChannel.SetHotkeyRecording, recording),
+  getUpdateStatus: () => ipcRenderer.invoke(IpcChannel.GetUpdateStatus),
+  checkForUpdates: () => ipcRenderer.invoke(IpcChannel.CheckForUpdates),
+  onUpdateStatus: (callback) => {
+    ipcRenderer.on(
+      IpcChannel.UpdateStatusChanged,
+      (_event, status: UpdateStatus) => callback(status),
+    );
+  },
+  openUpdate: (what) => ipcRenderer.invoke(IpcChannel.OpenUpdate, what),
   onShown: (callback) => {
     ipcRenderer.on(IpcChannel.PickerShown, (_event, view: PickerView) =>
       callback(view),

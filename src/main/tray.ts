@@ -13,6 +13,12 @@ import { showEmote } from './overlay';
 import { assetPath } from './paths';
 import { showPicker } from './picker';
 import { getSetting, onSettingChange, setSetting } from './store';
+import {
+  checkForUpdates,
+  getUpdateStatus,
+  onUpdateStatus,
+  openUpdate,
+} from './updates';
 
 // A few 7TV global emotes for the dev-only test menu.
 const TEST_EMOTES = [
@@ -130,6 +136,33 @@ function iconState(status: ConnectionStatus, dnd: boolean): IconState {
   return status.state === 'connected' ? 'normal' : 'offline';
 }
 
+/** "Update available" when there is one, otherwise "Check for updates". */
+function updateItems(): MenuItemConstructorOptions[] {
+  const update = getUpdateStatus();
+  if (update.state === 'available' && update.latest) {
+    return [
+      {
+        label: `Download Chatbox ${update.latest.version}…`,
+        click: () => openUpdate('download'),
+      },
+      {
+        label: `What's new in ${update.latest.version}`,
+        click: () => openUpdate('notes'),
+      },
+    ];
+  }
+  return [
+    {
+      label:
+        update.state === 'checking'
+          ? 'Checking for updates…'
+          : 'Check for updates',
+      enabled: update.state !== 'checking',
+      click: () => void checkForUpdates(),
+    },
+  ];
+}
+
 function updateMenu(): void {
   // Status changes keep coming while the app quits (the socket closing
   // reports a disconnect), after the tray is already gone.
@@ -159,6 +192,7 @@ function updateMenu(): void {
         click: (item) => setSetting('doNotDisturb', item.checked),
       },
       { type: 'separator' },
+      ...updateItems(),
       { label: 'Settings…', click: () => showPicker('settings') },
       ...debugMenu(),
       { type: 'separator' },
@@ -174,6 +208,7 @@ export function createTray(): Tray {
   updateMenu();
   onStatus(updateMenu);
   onHotkeyChange(updateMenu);
+  onUpdateStatus(updateMenu);
   onSettingChange((key) => {
     if (key === 'doNotDisturb') updateMenu();
   });

@@ -36,6 +36,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - run: npm test
       - name: Tag matches package.json version
         if: env.IS_RELEASE == 'true'
         run: |
