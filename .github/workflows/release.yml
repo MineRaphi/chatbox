@@ -148,7 +148,24 @@ jobs:
         run: |
           appimage="$(find out/make -name '*.AppImage' | head -1)"
           nix build --no-link nixpkgs#appimage-run   # download outside the timed run
-          SECONDS_TO_RUN=45 scripts/smoke-test.sh nix run nixpkgs#appimage-run -- "$appimage"
+
+          # appimage-run's sandbox has no fonts on this Ubuntu runner, and
+          # Chromium aborts without any ("Could not find any font"). A NixOS
+          # desktop always has fonts configured, so give it one font set
+          # the way NixOS would: a Nix font package plus a fontconfig file.
+          fonts="$(nix build --no-link --print-out-paths nixpkgs#dejavu_fonts)"
+          mkdir -p /tmp/chatbox-fonts
+          cat > /tmp/chatbox-fonts/fonts.conf <<EOF
+          <?xml version="1.0"?>
+          <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+          <fontconfig>
+            <dir>${fonts}/share/fonts</dir>
+            <cachedir>/tmp/chatbox-fonts/cache</cachedir>
+          </fontconfig>
+          EOF
+
+          FONTCONFIG_FILE=/tmp/chatbox-fonts/fonts.conf SECONDS_TO_RUN=45 \
+            scripts/smoke-test.sh nix run nixpkgs#appimage-run -- "$appimage"
 
       - name: Attach to the draft release
         if: env.IS_RELEASE == 'true'
