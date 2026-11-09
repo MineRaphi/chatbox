@@ -121,6 +121,9 @@ jobs:
         run: |
           sudo apt-get install -y ./out/make/deb/x64/*.deb
           scripts/smoke-test.sh chatbox
+          # As if in a Wayland session: Chatbox then forces XWayland
+          # (--ozone-platform=x11), here onto the virtual X display.
+          XDG_SESSION_TYPE=wayland scripts/smoke-test.sh chatbox
           sudo apt-get remove -y chatbox
 
       # AppImages can't ship Chromium's setuid sandbox helper and rely on

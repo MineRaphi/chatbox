@@ -62,6 +62,9 @@ function createOverlay(display: Display): OverlayWindow {
       visibleOnFullScreen: true,
       skipTransformProcessType: true,
     });
+  } else if (process.platform === 'linux') {
+    // Every virtual desktop (X11/XWayland; native Wayland ignores it).
+    win.setVisibleOnAllWorkspaces(true);
   }
 
   const overlay: OverlayWindow = { win, ready: false };

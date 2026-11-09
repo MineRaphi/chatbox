@@ -3,6 +3,7 @@
 
 export const IpcChannel = {
   GetAppInfo: 'app:getInfo',
+  Restart: 'app:restart',
   GetSettings: 'settings:get',
   SetSetting: 'settings:set',
   SettingsChanged: 'settings:changed',
@@ -29,6 +30,11 @@ export const IpcChannel = {
 export interface AppInfo {
   version: string;
   platform: NodeJS.Platform;
+  /** Linux: the desktop session is Wayland (overlays then run via XWayland
+   *  unless native Wayland mode is on). */
+  waylandSession: boolean;
+  /** Linux: this run is native Wayland (false = X11 or XWayland). */
+  nativeWayland: boolean;
 }
 
 export type MonitorTarget = 'primary' | 'all' | 'cursor';
@@ -58,6 +64,10 @@ export interface Settings {
   /** Drop incoming emotes (your own previews still show). */
   doNotDisturb: boolean;
   launchAtLogin: boolean;
+  /** Linux only: run natively on Wayland instead of through XWayland.
+   *  Native: the global hotkey works, but overlays can't stay on top or
+   *  follow you across virtual desktops. Takes effect after a restart. */
+  linuxNativeWayland: boolean;
   /** Offer beta versions (pre-releases) as updates too. */
   includeBetaUpdates: boolean;
   /** Internal: the newest version we already notified about, so the
@@ -164,6 +174,8 @@ export interface OverlayEmote {
  */
 export interface PickerApi {
   getAppInfo(): Promise<AppInfo>;
+  /** Quit and start Chatbox again (to apply restart-only settings). */
+  restart(): Promise<void>;
   getSettings(): Promise<Settings>;
   /** Resolves false if the value was rejected by validation. */
   setSetting<K extends SettingKey>(

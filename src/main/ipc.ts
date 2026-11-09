@@ -5,6 +5,7 @@ import { getEmotes, refreshEmotes, resolveSet } from './emotes';
 import { toggleFavorite } from './favorites';
 import { getHotkey, setRecording } from './hotkey';
 import { checkForUpdates, getUpdateStatus, openUpdate } from './updates';
+import { displayServerInfo } from './session';
 import { getSettings, isSettingKey, setSetting } from './store';
 
 /** Handlers for requests coming from renderers. Push events are sent elsewhere. */
@@ -12,7 +13,16 @@ export function registerIpc(): void {
   ipcMain.handle(IpcChannel.GetAppInfo, (): AppInfo => ({
     version: app.getVersion(),
     platform: process.platform,
+    ...displayServerInfo(),
   }));
+
+  ipcMain.handle(IpcChannel.Restart, () => {
+    // An AppImage must be relaunched through the AppImage file itself, not
+    // the binary inside its temporary mount.
+    const appImage = process.env.APPIMAGE;
+    app.relaunch(appImage ? { execPath: appImage } : undefined);
+    app.quit();
+  });
 
   ipcMain.handle(IpcChannel.GetSettings, () => getSettings());
 

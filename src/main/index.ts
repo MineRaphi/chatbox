@@ -9,6 +9,7 @@ import { initHotkey } from './hotkey';
 import { registerIpc } from './ipc';
 import { initOverlays } from './overlay';
 import { initPicker, showPicker } from './picker';
+import { configureDisplayServer } from './session';
 import { getSetting } from './store';
 import { createTray } from './tray';
 import { initUpdates } from './updates';
@@ -29,6 +30,10 @@ if (!app.isPackaged) {
   }
   app.setPath('userData', devDir);
 }
+
+// Linux on Wayland: XWayland by default so overlays can stay on top (see
+// session.ts). After the dev profile, because it reads a setting.
+configureDisplayServer();
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {

@@ -27,6 +27,7 @@ const DEFAULTS: Settings = {
   showSenderName: true,
   doNotDisturb: false,
   launchAtLogin: false,
+  linuxNativeWayland: false,
   includeBetaUpdates: false,
   notifiedUpdateVersion: '',
 };
@@ -77,6 +78,7 @@ const VALIDATORS: { [K in SettingKey]: (v: unknown) => boolean } = {
   showSenderName: (v) => typeof v === 'boolean',
   doNotDisturb: (v) => typeof v === 'boolean',
   launchAtLogin: (v) => typeof v === 'boolean',
+  linuxNativeWayland: (v) => typeof v === 'boolean',
   includeBetaUpdates: (v) => typeof v === 'boolean',
   notifiedUpdateVersion: (v) => isText(v, 64),
 };

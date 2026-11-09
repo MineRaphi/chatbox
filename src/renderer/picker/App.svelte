@@ -14,6 +14,7 @@
   let list = $state<EmoteList | null>(null);
   let settings = $state<SettingsData | null>(null);
   let platform = $state<NodeJS.Platform>('darwin');
+  let display = $state({ waylandSession: false, nativeWayland: false });
   // Bumped every time the window is shown, so views can refocus.
   let shownCount = $state(0);
   // Latest rate-limit notice; a new object each time so the picker reacts.
@@ -24,6 +25,10 @@
   // bridge copies return values back, and Svelte state proxies can't be copied.
   void window.chatbox.getAppInfo().then((info) => {
     platform = info.platform;
+    display = {
+      waylandSession: info.waylandSession,
+      nativeWayland: info.nativeWayland,
+    };
   });
   void window.chatbox.getStatus().then((s) => {
     status = s;
@@ -79,6 +84,7 @@
       {status}
       setNames={list?.setNames ?? {}}
       {update}
+      {display}
       {platform}
       {shownCount}
       onBack={() => (view = 'picker')}

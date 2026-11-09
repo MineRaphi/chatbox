@@ -167,4 +167,5 @@ python3 scripts/generate-tray-icons.py
 - **"Slow down"** in the picker: the server's rate limit (30 emotes per 10 seconds by default) dropped some of yours.
 - **Linux: no tray icon.** GNOME needs the AppIndicator extension.
 - **Linux: the overlay is black or missing.** Transparent windows need a running compositor.
-- **Linux on Wayland: the hotkey doesn't work.** It goes through the desktop's GlobalShortcuts portal, which not every desktop supports yet. Open the picker from the tray instead.
+- **Linux on Wayland: emotes don't stay on top or don't show on other virtual desktops.** Wayland doesn't let apps keep windows on top, so Chatbox runs through XWayland there by default, where it works. If you switched on **Settings → General → Native Wayland mode**, switch it off again.
+- **Linux on Wayland: the hotkey only works while Chatbox is focused.** That's the XWayland trade-off. Open the picker from the tray, or switch on **Native Wayland mode** (hotkey via the desktop's GlobalShortcuts portal, but emotes can't stay on top).

@@ -12,6 +12,7 @@ import {
 
 const api: PickerApi = {
   getAppInfo: () => ipcRenderer.invoke(IpcChannel.GetAppInfo),
+  restart: () => ipcRenderer.invoke(IpcChannel.Restart),
   getSettings: () => ipcRenderer.invoke(IpcChannel.GetSettings),
   setSetting: (key, value) =>
     ipcRenderer.invoke(IpcChannel.SetSetting, key, value),

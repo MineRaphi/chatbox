@@ -18,12 +18,15 @@
     /** Display names of cached sets, by ID. */
     setNames: Record<string, string>;
     update: UpdateStatus | null;
+    /** Linux: Wayland session, and whether this run is native Wayland. */
+    display: { waylandSession: boolean; nativeWayland: boolean };
     platform: NodeJS.Platform;
     shownCount: number;
     onBack: () => void;
   }
   const { settings, status, setNames,
-    update, platform, shownCount, onBack }: Props =
+    update,
+    display, platform, shownCount, onBack }: Props =
     $props();
 
   const SIZES = [
@@ -433,7 +436,26 @@
         checked={settings.doNotDisturb}
         onChange={(v) => save('doNotDisturb', v)}
       />
-      <Toggle
+      {#if platform === 'linux' && display.waylandSession}
+        <Toggle
+          label="Native Wayland mode"
+          hint="The global hotkey works everywhere, but emotes can't stay on top or follow you to other virtual desktops. Off: Chatbox runs through XWayland so overlays work properly."
+          checked={settings.linuxNativeWayland}
+          onChange={(v) => save('linuxNativeWayland', v)}
+        />
+        {#if settings.linuxNativeWayland !== display.nativeWayland}
+          <div class="flex items-center justify-between gap-2 rounded-md bg-amber-950/60 px-3 py-2">
+            <span class="text-xs text-amber-200">Restart Chatbox to apply this.</span>
+            <button
+              class="shrink-0 rounded-md bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-900 hover:bg-white"
+              onclick={() => window.chatbox.restart()}
+            >
+              Restart now
+            </button>
+          </div>
+        {/if}
+      {/if}
+            <Toggle
         label="Launch at login"
         checked={settings.launchAtLogin}
         onChange={(v) => save('launchAtLogin', v)}
