@@ -83,8 +83,12 @@ jobs:
           - name: Windows
             os: windows-latest
             arch: x64
+          # Pinned: ubuntu-latest moved to Ubuntu 26, whose rpm (4.20+)
+          # builds in a different directory; electron-installer-redhat 4.0.0
+          # (latest) still copies from the old one and the .rpm build fails
+          # with "cp: cannot stat 'usr/*'". Ubuntu 24.04 has rpm 4.18.
           - name: Linux
-            os: ubuntu-latest
+            os: ubuntu-24.04
             arch: x64
     name: Build (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
