@@ -32,7 +32,8 @@ const config: ForgeConfig = {
     appCategoryType: 'public.app-category.social-networking',
     icon: './icons/chatbox',
     // Tray icons are loaded from disk at runtime, so they ship outside the asar.
-    extraResource: ['./assets'],
+    // chatbox.png: the icon for the AppImage's own app menu entry.
+    extraResource: ['./assets', './icons/chatbox.png'],
     // Menu-bar app on macOS: no dock icon.
     extendInfo: { LSUIElement: true },
     win32metadata: {

@@ -4,6 +4,7 @@ import { app, globalShortcut } from 'electron';
 import started from 'electron-squirrel-startup';
 import { initAutostart } from './autostart';
 import { initConnection } from './connection';
+import { initDesktopEntry } from './desktop-entry';
 import { initEmotes } from './emotes';
 import { initHotkey } from './hotkey';
 import { registerIpc } from './ipc';
@@ -99,6 +100,7 @@ if (relaunchingOnX11) {
     initPicker();
     initHotkey();
     initAutostart();
+    initDesktopEntry();
     void initEmotes();
     initUpdates();
 
