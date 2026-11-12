@@ -108,7 +108,7 @@ const config: ForgeConfig = {
         // The packaged executable is named after packagerConfig.name.
         bin: 'Chatbox',
         homepage: 'https://github.com/MineRaphi/chatbox',
-        license: 'ISC',
+        license: 'GPL-3.0-only',
         icon: './icons/chatbox.png',
         categories: ['Network'],
       },

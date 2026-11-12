@@ -169,3 +169,13 @@ python3 scripts/generate-tray-icons.py
 - **Linux: the overlay is black or missing.** Transparent windows need a running compositor.
 - **Linux on Wayland: emotes don't stay on top or don't show on other virtual desktops.** Wayland doesn't let apps keep windows on top, so Chatbox runs through XWayland there by default, where it works. If you switched on **Settings → General → Native Wayland mode**, switch it off again.
 - **Linux on Wayland: the hotkey only works while Chatbox is focused.** That's the XWayland trade-off. Open the picker from the tray, or switch on **Native Wayland mode** (hotkey via the desktop's GlobalShortcuts portal, but emotes can't stay on top).
+
+## License and disclaimer
+
+Copyright (c) 2025-2026 MineRaphi
+
+Chatbox is free software, licensed under the [GNU General Public License v3.0](LICENSE) (GPL-3.0). You may use, change and share it, also for money, as long as anyone you give a copy to gets the full source code, including your changes, under the same license. The copyright notice must stay, and changes must be marked.
+
+This software is provided "as is", without warranty of any kind. Use it at your own risk; the author is not liable for any damage or loss resulting from its use. The builds are unsigned and not reviewed by Apple or Microsoft.
+
+Chatbox is a hobby project and is not affiliated with or endorsed by 7TV. Emotes are loaded from 7TV and belong to their respective creators.

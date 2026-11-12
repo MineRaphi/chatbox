@@ -12,7 +12,7 @@
     "type": "git",
     "url": "git+https://github.com/MineRaphi/chatbox.git"
   },
-  "license": "ISC",
+  "license": "GPL-3.0-only",
   "author": "MineRaphi",
   "main": ".vite/build/index.cjs",
   "scripts": {
