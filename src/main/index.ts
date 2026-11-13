@@ -32,10 +32,13 @@ if (!app.isPackaged) {
   app.setPath('userData', devDir);
 }
 
+// Only one instance: a second launch opens the picker of the running one.
+// Taken first, so a second launch never starts anything else.
+const gotLock = app.requestSingleInstanceLock();
+
 // Linux on Wayland: XWayland by default so overlays can stay on top (see
-// session.ts). After the dev profile, because it reads a setting; before
-// the single-instance lock, which this copy must not take.
-const relaunchingOnX11 = relaunchOnX11IfNeeded();
+// session.ts). After the dev profile, because it reads a setting.
+const relaunchingOnX11 = gotLock && relaunchOnX11IfNeeded();
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -56,11 +59,10 @@ if (process.platform === 'win32') {
   app.setAppUserModelId('com.squirrel.chatbox.Chatbox');
 }
 
-// Only one instance: a second launch opens the picker of the running one.
 if (relaunchingOnX11) {
-  // The X11 copy starts as soon as this one exits.
+  // The X11 copy has taken over.
   app.exit(0);
-} else if (!app.requestSingleInstanceLock()) {
+} else if (!gotLock) {
   app.quit();
 } else {
   app.on('second-instance', () => showPicker());

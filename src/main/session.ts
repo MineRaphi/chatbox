@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { app } from 'electron';
 import { getSetting } from './store';
 
 // On a Wayland desktop, apps can't keep their windows on top or put them on
@@ -24,10 +25,11 @@ let nativeWayland = false;
 /**
  * On a Wayland session (unless native Wayland mode is on), make sure this
  * process runs on X11. Returns true when it started an X11 copy of itself,
- * in which case the caller must exit right away (without taking the
- * single-instance lock, which the copy needs). Call before the
- * single-instance lock, and after the settings folder is final (dev
- * profile), since it reads a setting.
+ * in which case the caller must exit right away. Call only while holding
+ * the single-instance lock (so a second launch, e.g. from a window
+ * manager keybind, goes straight to the running Chatbox instead of
+ * starting a copy first); it hands the lock over to the copy. Call after
+ * the settings folder is final (dev profile), since it reads a setting.
  */
 export function relaunchOnX11IfNeeded(): boolean {
   if (process.platform !== 'linux') return false;
@@ -47,6 +49,8 @@ export function relaunchOnX11IfNeeded(): boolean {
   console.log(
     `[session] Wayland session: starting on XWayland: ${executable} ${args.join(' ')}`,
   );
+  // The copy needs the single-instance lock.
+  app.releaseSingleInstanceLock();
   const child = spawn(executable, args, { detached: true, stdio: 'inherit' });
   child.on('error', (err) => {
     console.error('[session] could not start the XWayland copy:', err);

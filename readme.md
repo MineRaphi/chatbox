@@ -84,6 +84,37 @@ The AppImage uses Chromium's user-namespace sandbox, which Arch and NixOS allow.
 
 On GNOME (Ubuntu's default desktop) the tray icon needs the AppIndicator extension; Ubuntu ships it enabled, other GNOME setups may need it installed.
 
+#### Hyprland and other tiling window managers
+
+Tiling window managers decide for themselves where windows go and largely ignore what apps ask for, so Chatbox needs a few window rules there.
+
+- **The hotkey:** X11 hotkeys only work while a Chatbox window is focused. Bind a key in your window manager to start Chatbox again (`chatbox`, or the AppImage command you start it with). A second start doesn't open a second Chatbox; it opens the picker of the running one.
+- **Hyprland (0.55 and newer, Lua config):** the overlays (title `Chatbox overlay`) should float on every workspace, never take focus and have no border; the picker floats in the middle of the screen.
+
+  ```lua
+  hl.window_rule({
+    name             = "chatbox-overlay",
+    match            = { class = "(?i)chatbox", title = "Chatbox overlay" },
+    float            = true,
+    pin              = true,
+    no_focus         = true,
+    no_initial_focus = true,
+    decorate         = false,
+    border_size      = 0,
+    no_blur          = true,
+    no_shadow        = true,
+    no_anim          = true,
+  })
+  hl.window_rule({
+    name   = "chatbox-picker",
+    match  = { class = "(?i)chatbox", title = "Chatbox" },
+    float  = true,
+    center = true,
+  })
+  ```
+
+  `hyprctl clients` shows how Hyprland sees each Chatbox window (class, title, floating, pinned).
+
 ### Updates
 
 Chatbox checks GitHub for new versions at startup and every 6 hours. When there is one, you get a notification once, and the tray menu and **Settings → Updates** offer the download for your system (it doesn't install anything by itself). Beta versions are only offered if **Include beta versions** is on.

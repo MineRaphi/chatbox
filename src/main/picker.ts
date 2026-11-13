@@ -5,10 +5,15 @@ import { IpcChannel, type PickerView } from '../shared/ipc';
 const WIDTH = 360;
 const HEIGHT = 420;
 const RELOAD_DELAY_MS = 1_000;
+// Some Linux window managers (Hyprland, for one) take focus away again right
+// after the picker appears, e.g. back to where the tray menu was. A blur
+// that soon after showing doesn't count, or the picker would vanish at once.
+const BLUR_GRACE_MS = 500;
 
 let picker: BrowserWindow | null = null;
 let loaded = false;
 let showWhenLoaded: PickerView | null = null;
+let shownAt = 0;
 
 function load(win: BrowserWindow): void {
   loaded = false;
@@ -49,7 +54,13 @@ function createPicker(): BrowserWindow {
   });
 
   // The picker is a popup: it goes away when it loses focus or on Esc.
-  win.on('blur', () => win.hide());
+  win.on('blur', () => {
+    if (Date.now() - shownAt < BLUR_GRACE_MS) {
+      console.info('[picker] lost focus right after opening; staying open');
+      return;
+    }
+    win.hide();
+  });
   win.webContents.on('before-input-event', (event, input) => {
     if (input.type === 'keyDown' && input.key === 'Escape') {
       event.preventDefault();
@@ -114,6 +125,7 @@ function present(win: BrowserWindow, view: PickerView): void {
   // A menu-bar app isn't the active app; activate it so the picker gets
   // keyboard focus (and so the blur-to-hide behaviour works).
   if (process.platform === 'darwin') app.focus({ steal: true });
+  shownAt = Date.now();
   win.show();
   win.focus();
   win.webContents.send(IpcChannel.PickerShown, view);
