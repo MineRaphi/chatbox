@@ -5,12 +5,27 @@ import {
   type AvailableUpdate,
   type UpdateStatus,
 } from '../shared/ipc';
-import { isSafeUrl, pickUpdate } from './update-check';
+import { showPicker } from './picker';
 import { getSetting, onSettingChange, setSetting } from './store';
+import {
+  UNATTENDED,
+  canInstall,
+  currentInstall,
+  installKind,
+  isSafeUrl,
+  pickUpdate,
+} from './update-check';
+import {
+  cleanUpAfterUpdate,
+  install,
+  restartIntoUpdate,
+} from './update-install';
 
-// Check for new releases on GitHub and suggest installing them. Nothing is
-// downloaded or installed automatically: the user gets a notification and
-// a link to the right file for their system.
+// Check for new releases on GitHub and offer them. Where Chatbox can
+// update itself (see InstallKind), an Install button does it; elsewhere
+// the user gets a link to the right file. Nothing is installed unasked,
+// unless the user switched on the auto-update setting, which exists only
+// for the kinds of install that can update unattended.
 
 const RELEASES_API =
   'https://api.github.com/repos/MineRaphi/chatbox/releases?per_page=30';
@@ -19,15 +34,24 @@ const FIRST_CHECK_DELAY_MS = 10_000;
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1_000;
 const FETCH_TIMEOUT_MS = 15_000;
 
+// Dev runs are not installed anywhere, so they never update themselves.
+const kind = app.isPackaged ? installKind(currentInstall()) : 'other';
+
 let status: UpdateStatus = {
   state: 'idle',
   current: app.getVersion(),
   latest: null,
   checkedAt: null,
   error: null,
+  installKind: kind,
+  canInstall: false,
+  canAutoUpdate: UNATTENDED.includes(kind),
+  progress: null,
+  installError: null,
 };
 const events = new EventEmitter<{ status: [UpdateStatus] }>();
 let checking: Promise<void> | null = null;
+let installing: Promise<void> | null = null;
 
 function setStatus(next: Partial<UpdateStatus>): void {
   status = { ...status, ...next };
@@ -45,21 +69,45 @@ function feedUrl(): string {
   return !app.isPackaged && override ? override : RELEASES_API;
 }
 
-function notifyOnce(update: AvailableUpdate): void {
-  if (getSetting('notifiedUpdateVersion') === update.version) return;
-  setSetting('notifiedUpdateVersion', update.version);
+function notify(title: string, body: string, onClick: () => void): void {
   if (!Notification.isSupported()) return;
-  const notification = new Notification({
-    title: `Chatbox ${update.version} is available`,
-    body: update.fileName
-      ? `Click to download ${update.fileName}.`
-      : 'Click to open the download page.',
-  });
-  notification.on('click', () => openUpdate('download'));
+  const notification = new Notification({ title, body });
+  notification.on('click', onClick);
   notification.show();
 }
 
+function notifyOnce(update: AvailableUpdate): void {
+  if (getSetting('notifiedUpdateVersion') === update.version) return;
+  setSetting('notifiedUpdateVersion', update.version);
+  const title = `Chatbox ${update.version} is available`;
+  if (status.canInstall) {
+    notify(title, 'Click to open the settings and install it.', () =>
+      showPicker('settings'),
+    );
+  } else {
+    notify(
+      title,
+      update.fileName
+        ? `Click to download ${update.fileName}.`
+        : 'Click to open the download page.',
+      () => openUpdate('download'),
+    );
+  }
+}
+
+/** The auto-update setting is on and applies to this update. */
+const shouldAutoInstall = (): boolean =>
+  status.state === 'available' &&
+  status.canInstall &&
+  status.canAutoUpdate &&
+  getSetting('autoUpdate');
+
 export function checkForUpdates(): Promise<void> {
+  // An update that is being installed, or waits for a restart, stays as
+  // it is; the next check after the restart looks again.
+  if (status.state === 'installing' || status.state === 'ready') {
+    return Promise.resolve();
+  }
   checking ??= (async () => {
     setStatus({ state: 'checking', error: null });
     try {
@@ -80,8 +128,14 @@ export function checkForUpdates(): Promise<void> {
         state: latest ? 'available' : 'up-to-date',
         latest,
         checkedAt: Date.now(),
+        canInstall: latest !== null && canInstall(kind, latest),
+        installError: null,
       });
-      if (latest) notifyOnce(latest);
+      if (shouldAutoInstall()) {
+        void runInstall(false);
+      } else if (latest) {
+        notifyOnce(latest);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       // Network failures (offline, DNS, timeouts) in plain words.
@@ -96,6 +150,65 @@ export function checkForUpdates(): Promise<void> {
     checking = null;
   });
   return checking;
+}
+
+// --- Installing -------------------------------------------------------------
+
+/**
+ * Download and install the available update. With `restart`, Chatbox then
+ * restarts into it; without (auto-update), it keeps running and the new
+ * version starts next time.
+ */
+function runInstall(restart: boolean): Promise<void> {
+  const update = status.latest;
+  if (status.state !== 'available' || !status.canInstall || !update) {
+    return installing ?? Promise.resolve();
+  }
+  installing ??= (async () => {
+    setStatus({ state: 'installing', progress: null, installError: null });
+    try {
+      await install(kind, update, (progress) => {
+        if (status.state === 'installing') setStatus({ progress });
+      });
+      // Only where the running copy is untouched can it keep running;
+      // everywhere else its files were just replaced.
+      if (restart || !UNATTENDED.includes(kind)) {
+        restartIntoUpdate(kind);
+        return;
+      }
+      setStatus({ state: 'ready', progress: null });
+      notify(
+        `Chatbox ${update.version} is installed`,
+        'It starts the next time you open Chatbox. Click to restart now.',
+        () => restartIntoUpdate(kind),
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn('[updates] install failed:', err);
+      setStatus({
+        state: 'available',
+        progress: null,
+        installError: message,
+      });
+      // Asked for by the user: show where it says what went wrong.
+      if (restart) showPicker('settings');
+    }
+  })().finally(() => {
+    installing = null;
+  });
+  return installing;
+}
+
+/**
+ * The Install button: install the update and restart, or, if it is
+ * already installed, restart into it.
+ */
+export function installUpdate(): Promise<void> {
+  if (status.state === 'ready') {
+    restartIntoUpdate(kind);
+    return Promise.resolve();
+  }
+  return runInstall(true);
 }
 
 export function openUpdate(what: 'download' | 'notes'): void {
@@ -114,8 +227,11 @@ export function onUpdateStatus(listener: (s: UpdateStatus) => void): void {
 }
 
 export function initUpdates(): void {
+  cleanUpAfterUpdate(kind);
   onSettingChange((key) => {
     if (key === 'includeBetaUpdates') void checkForUpdates();
+    // Switched on while an update is already waiting: install it now.
+    if (key === 'autoUpdate' && shouldAutoInstall()) void runInstall(false);
   });
   // Automatic checks in installed builds (or when a test feed is set);
   // dev runs can still check by hand.

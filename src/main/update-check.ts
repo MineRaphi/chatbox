@@ -2,7 +2,7 @@
 // fits this system. Kept separate so it can be tested with plain Node.
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import type { AvailableUpdate } from '../shared/ipc';
+import type { AvailableUpdate, InstallKind } from '../shared/ipc';
 
 // Only ever open links into this repo's releases, whatever the API says.
 export const SAFE_URL_PREFIX = 'https://github.com/MineRaphi/chatbox/releases/';
@@ -58,8 +58,10 @@ export function compareVersions(a: Version, b: Version): number {
 export interface InstallInfo {
   platform: NodeJS.Platform;
   arch: string;
-  /** Windows: installed with Chatbox-Setup.exe (Squirrel), not the zip. */
+  /** Windows: installed with the Setup.exe (Squirrel), not the zip. */
   squirrel: boolean;
+  /** Windows: installed with Scoop. */
+  scoop: boolean;
   /** Linux: running from an AppImage. */
   appImage: boolean;
   /** Linux: a Debian-based system (.deb rather than .rpm). */
@@ -89,6 +91,100 @@ export function assetPatternFor(info: InstallInfo): RegExp | null {
   }
 }
 
+/** The kind of install, which decides how Chatbox can update itself. */
+export function installKind(info: InstallInfo): InstallKind {
+  switch (info.platform) {
+    case 'darwin':
+      return 'mac';
+    case 'win32':
+      if (info.squirrel) return 'squirrel';
+      return info.scoop ? 'scoop' : 'win-portable';
+    case 'linux':
+      // Only x64 builds exist; anything else was built by hand.
+      if (info.arch !== 'x64') return 'other';
+      if (info.appImage) return 'appimage';
+      return info.debian ? 'deb' : 'rpm';
+    default:
+      return 'other';
+  }
+}
+
+/** Kinds that can install an update when asked to (the Install button). */
+export const SELF_INSTALLING: readonly InstallKind[] = [
+  'squirrel',
+  'scoop',
+  'appimage',
+  'deb',
+  'rpm',
+  'mac',
+];
+/** Kinds that can also do it unattended (the auto-update toggle). */
+export const UNATTENDED: readonly InstallKind[] = ['squirrel', 'appimage'];
+
+/**
+ * Whether Chatbox can install this update itself. Besides the kind of
+ * install, the release has to carry what that needs: a checksum to verify
+ * the download against, or the Windows updater's own files.
+ */
+export function canInstall(
+  kind: InstallKind,
+  update: AvailableUpdate,
+): boolean {
+  if (!SELF_INSTALLING.includes(kind)) return false;
+  if (kind === 'squirrel') return update.squirrelFeed;
+  // Scoop downloads and verifies by itself, from its own manifest.
+  if (kind === 'scoop') return true;
+  return update.fileName !== null && update.sha256 !== null;
+}
+
+/** Folder of a release's files, e.g. for the Windows updater's feed. */
+export function releaseFilesUrl(version: string): string {
+  return `${SAFE_URL_PREFIX}download/v${version}`;
+}
+
+// --- Install commands -----------------------------------------------------
+
+/** The command that installs a downloaded package, run through pkexec. */
+export function packageInstallCommand(
+  kind: 'deb' | 'rpm',
+  file: string,
+): string[] {
+  return kind === 'deb'
+    ? ['dpkg', '-i', file]
+    : // 2.1.0 counts as older than 2.1.0.beta for rpm; allow that step.
+      ['rpm', '-U', '--oldpackage', file];
+}
+
+/**
+ * The script that updates Chatbox with Scoop after this copy has quit
+ * (Scoop refuses to touch a running program), then starts it again. Its
+ * window stays visible so progress and errors can be seen.
+ */
+export function scoopUpdateScript(pid: number, execPath: string): string {
+  // …\scoop\apps\chatbox\<version>\Chatbox.exe → …\current\Chatbox.exe
+  const exe = execPath.replace(
+    /([\\/]scoop[\\/]apps[\\/]chatbox[\\/])[^\\/]+/i,
+    '$1current',
+  );
+  const quoted = `'${exe.replaceAll("'", "''")}'`;
+  return [
+    "Write-Host 'Updating Chatbox with Scoop...'",
+    `Wait-Process -Id ${pid} -Timeout 30 -ErrorAction SilentlyContinue`,
+    'scoop update',
+    'scoop update chatbox',
+    '$failed = -not $?',
+    `Start-Process -FilePath ${quoted}`,
+    'if ($failed) {',
+    "  Write-Host 'Scoop reported a problem (see above). Chatbox was started again.'",
+    "  Read-Host 'Press Enter to close this window'",
+    '} else {',
+    "  Write-Host 'Done. This window closes by itself.'",
+    '  Start-Sleep -Seconds 4',
+    '}',
+    '',
+  ].join('\r\n');
+}
+
 /** How this running copy was installed. */
 export function currentInstall(): InstallInfo {
   return {
@@ -100,6 +196,10 @@ export function currentInstall(): InstallInfo {
       existsSync(
         path.resolve(path.dirname(process.execPath), '..', 'Update.exe'),
       ),
+    // Scoop keeps apps in <scoop>\\apps\\<name>\\<version or "current">.
+    scoop:
+      process.platform === 'win32' &&
+      /[\\/]scoop[\\/]apps[\\/]chatbox[\\/]/i.test(process.execPath),
     appImage: Boolean(process.env.APPIMAGE),
     debian: existsSync('/etc/debian_version'),
   };
@@ -110,7 +210,11 @@ interface GitHubRelease {
   draft?: unknown;
   prerelease?: unknown;
   html_url?: unknown;
-  assets?: { name?: unknown; browser_download_url?: unknown }[];
+  assets?: {
+    name?: unknown;
+    browser_download_url?: unknown;
+    digest?: unknown;
+  }[];
 }
 
 export const isSafeUrl = (v: unknown): v is string =>
@@ -153,11 +257,21 @@ export function pickUpdate(
       isSafeUrl(a.browser_download_url),
   );
   const pageUrl = best.release.html_url as string;
+  const digest = typeof asset?.digest === 'string' ? asset.digest : '';
+  const names = new Set(
+    (best.release.assets ?? []).map((a) =>
+      typeof a.name === 'string' ? a.name : '',
+    ),
+  );
   return {
     version: (best.release.tag_name as string).replace(/^v/, ''),
     prerelease: best.release.prerelease === true,
     pageUrl,
     downloadUrl: asset ? (asset.browser_download_url as string) : pageUrl,
     fileName: asset ? (asset.name as string) : null,
+    sha256: /^sha256:([0-9a-f]{64})$/.exec(digest)?.[1] ?? null,
+    // Squirrel reads RELEASES, which names the .nupkg to download.
+    squirrelFeed:
+      names.has('RELEASES') && [...names].some((n) => n.endsWith('.nupkg')),
   };
 }

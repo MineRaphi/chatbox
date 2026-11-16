@@ -23,6 +23,7 @@ export const IpcChannel = {
   CheckForUpdates: 'updates:check',
   UpdateStatusChanged: 'updates:status',
   OpenUpdate: 'updates:open',
+  InstallUpdate: 'updates:install',
   PickerShown: 'picker:shown',
   OverlayShow: 'overlay:show',
 } as const;
@@ -70,6 +71,9 @@ export interface Settings {
   linuxNativeWayland: boolean;
   /** Offer beta versions (pre-releases) as updates too. */
   includeBetaUpdates: boolean;
+  /** Download and install updates without asking; they take effect on
+   *  the next start. Only where Chatbox can update itself unattended. */
+  autoUpdate: boolean;
   /** Internal: the newest version we already notified about, so the
    *  notification shows once per version, not on every start. */
   notifiedUpdateVersion: string;
@@ -144,16 +148,60 @@ export interface AvailableUpdate {
   downloadUrl: string;
   /** File name of the download, when one matched. */
   fileName: string | null;
+  /** SHA-256 of the download as GitHub reports it, when it does. */
+  sha256: string | null;
+  /** Windows installer builds: the release has the updater's own files. */
+  squirrelFeed: boolean;
 }
 
+/**
+ * How this copy of Chatbox was installed, which decides how it updates:
+ * - `squirrel`: Windows installer (Chatbox-…-Windows-Setup.exe)
+ * - `scoop`: Windows, installed with Scoop
+ * - `win-portable`: Windows portable zip
+ * - `appimage`, `deb`, `rpm`: Linux
+ * - `mac`: macOS
+ */
+export type InstallKind =
+  | 'squirrel'
+  | 'scoop'
+  | 'win-portable'
+  | 'appimage'
+  | 'deb'
+  | 'rpm'
+  | 'mac'
+  | 'other';
+
+/**
+ * - `available`: there is a newer version; nothing downloaded yet
+ * - `installing`: downloading or installing it (`progress` 0..1 if known)
+ * - `ready`: installed; the new version runs from the next start
+ */
 export interface UpdateStatus {
-  state: 'idle' | 'checking' | 'up-to-date' | 'available' | 'error';
+  state:
+    | 'idle'
+    | 'checking'
+    | 'up-to-date'
+    | 'available'
+    | 'installing'
+    | 'ready'
+    | 'error';
   /** The running version. */
   current: string;
   latest: AvailableUpdate | null;
   /** When the last check finished (ms since epoch). */
   checkedAt: number | null;
+  /** Why the last check failed. */
   error: string | null;
+  installKind: InstallKind;
+  /** Chatbox can install `latest` itself (the Install button). */
+  canInstall: boolean;
+  /** This kind of install supports unattended updates (the toggle). */
+  canAutoUpdate: boolean;
+  /** Download progress from 0 to 1 while `installing`, when known. */
+  progress: number | null;
+  /** Why the last install attempt failed; the download link still works. */
+  installError: string | null;
 }
 
 /** One emote to show in an overlay window. */
@@ -206,6 +254,9 @@ export interface PickerApi {
   onUpdateStatus(callback: (status: UpdateStatus) => void): void;
   /** Open the download or the release notes of the available update. */
   openUpdate(what: 'download' | 'notes'): Promise<void>;
+  /** Install the available update and restart; or, once it is `ready`,
+   *  just restart into it. Progress and errors arrive as update status. */
+  installUpdate(): Promise<void>;
   /** Fires every time the picker window is shown, with the view to open. */
   onShown(callback: (view: PickerView) => void): void;
 }

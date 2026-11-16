@@ -5,6 +5,9 @@
 //   Chatbox-2.1.0-macOS-Intel.zip          Chatbox-2.1.0-Windows-Portable.zip
 //   Chatbox-2.1.0-Linux.deb  Chatbox-2.1.0-Linux.rpm  Chatbox-2.1.0-Linux.AppImage
 //
+// plus RELEASES and chatbox-2.1.0-full.nupkg, which the Windows installer's
+// updater needs to update an installed Chatbox.
+//
 // The update check (src/main/update-check.ts) and the Scoop manifest
 // (scripts/update-scoop-manifest.mjs) look for these names; change them
 // together.
@@ -14,12 +17,14 @@ import { fileURLToPath } from 'node:url';
 
 /**
  * The release name for a file from out/make, or null for files that aren't
- * released (Squirrel's RELEASES and .nupkg, which only its own updater
- * would use).
+ * released.
  */
 export function releaseName(file, version) {
   const name = path.basename(file);
   const base = `Chatbox-${version}`;
+  // The Windows installer's updater downloads these two by exactly these
+  // names (RELEASES lists the .nupkg), so they keep them.
+  if (name === 'RELEASES' || name.endsWith('-full.nupkg')) return name;
   if (name.endsWith('.AppImage')) return `${base}-Linux.AppImage`;
   if (name.endsWith('.deb')) return `${base}-Linux.deb`;
   if (name.endsWith('.rpm')) return `${base}-Linux.rpm`;

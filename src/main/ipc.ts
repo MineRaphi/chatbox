@@ -4,8 +4,13 @@ import { getStatus, sendEmote } from './connection';
 import { getEmotes, refreshEmotes, resolveSet } from './emotes';
 import { toggleFavorite } from './favorites';
 import { getHotkey, setRecording } from './hotkey';
-import { checkForUpdates, getUpdateStatus, openUpdate } from './updates';
-import { X11_FLAG, displayServerInfo } from './session';
+import {
+  checkForUpdates,
+  getUpdateStatus,
+  installUpdate,
+  openUpdate,
+} from './updates';
+import { displayServerInfo, restartApp } from './session';
 import { getSettings, isSettingKey, setSetting } from './store';
 
 /** Handlers for requests coming from renderers. Push events are sent elsewhere. */
@@ -16,16 +21,7 @@ export function registerIpc(): void {
     ...displayServerInfo(),
   }));
 
-  ipcMain.handle(IpcChannel.Restart, () => {
-    // An AppImage must be relaunched through the AppImage file itself, not
-    // the binary inside its temporary mount.
-    const appImage = process.env.APPIMAGE;
-    // Drop the X11 flag: the new copy decides again from the current
-    // setting (and re-adds it if native Wayland mode is off).
-    const args = process.argv.slice(1).filter((a) => a !== X11_FLAG);
-    app.relaunch({ args, ...(appImage ? { execPath: appImage } : {}) });
-    app.quit();
-  });
+  ipcMain.handle(IpcChannel.Restart, () => restartApp());
 
   ipcMain.handle(IpcChannel.GetSettings, () => getSettings());
 
@@ -56,6 +52,8 @@ export function registerIpc(): void {
   ipcMain.handle(IpcChannel.OpenUpdate, (_event, what: unknown) => {
     if (what === 'download' || what === 'notes') openUpdate(what);
   });
+
+  ipcMain.handle(IpcChannel.InstallUpdate, () => installUpdate());
 
   ipcMain.handle(IpcChannel.ToggleFavorite, (_event, emote: unknown) =>
     toggleFavorite(emote),

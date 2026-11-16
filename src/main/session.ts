@@ -65,3 +65,15 @@ export function displayServerInfo(): {
 } {
   return { waylandSession, nativeWayland };
 }
+
+/** Quit and start Chatbox again. */
+export function restartApp(): void {
+  // An AppImage must be relaunched through the AppImage file itself, not
+  // the binary inside its temporary mount.
+  const appImage = process.env.APPIMAGE;
+  // Drop the X11 flag: the new copy decides again from the current
+  // setting (and re-adds it if native Wayland mode is off).
+  const args = process.argv.slice(1).filter((a) => a !== X11_FLAG);
+  app.relaunch({ args, ...(appImage ? { execPath: appImage } : {}) });
+  app.quit();
+}

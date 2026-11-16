@@ -62,6 +62,7 @@ const api: PickerApi = {
     );
   },
   openUpdate: (what) => ipcRenderer.invoke(IpcChannel.OpenUpdate, what),
+  installUpdate: () => ipcRenderer.invoke(IpcChannel.InstallUpdate),
   onShown: (callback) => {
     ipcRenderer.on(IpcChannel.PickerShown, (_event, view: PickerView) =>
       callback(view),

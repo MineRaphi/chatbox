@@ -23,14 +23,24 @@ test('every built file gets its release name', () => {
   }
 });
 
-test("Squirrel's own update files are not released", () => {
-  assert.equal(releaseName('RELEASES', V), null);
-  assert.equal(releaseName('chatbox-2.1.0-beta-full.nupkg', V), null);
+test("the Windows updater's files keep their names", () => {
+  assert.equal(releaseName('RELEASES', V), 'RELEASES');
+  assert.equal(
+    releaseName('chatbox-2.1.0-beta-full.nupkg', V),
+    'chatbox-2.1.0-beta-full.nupkg',
+  );
+  assert.equal(releaseName('something-else.txt', V), null);
 });
 
 test('the update check finds exactly one release file per kind of install', () => {
   const released = Object.values(BUILT);
-  const base = { arch: 'x64', squirrel: false, appImage: false, debian: false };
+  const base = {
+    arch: 'x64',
+    squirrel: false,
+    scoop: false,
+    appImage: false,
+    debian: false,
+  };
   const installs = [
     [{ ...base, platform: 'darwin', arch: 'arm64' }, 'macOS-AppleSilicon.zip'],
     [{ ...base, platform: 'darwin' }, 'macOS-Intel.zip'],

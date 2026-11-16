@@ -157,7 +157,7 @@ The tray icon shows the state at a glance: normal when connected, dimmed when th
 | Shortcut   | The hotkey that opens the picker                                                            |
 | Overlay    | Emote size and duration, which screens, sender's name on or off, the two optional limits    |
 | Emote sets | The 7TV sets to pick from                                                                   |
-| Updates    | Your version, **Check now**, include beta versions                                          |
+| Updates    | Your version, **Check now**, installing updates, beta versions                              |
 | General    | Do not disturb, launch at login, and on Linux with Wayland, [Native Wayland mode](#wayland) |
 
 ### Emote sets
@@ -183,9 +183,22 @@ Turn it on in the tray menu or under **General**. Emotes from friends no longer 
 
 ### Updates
 
-Chatbox checks GitHub for new versions at startup and every 6 hours. When there's one, you get a notification once, and the tray menu and **Settings → Updates** offer the download for your system. It doesn't install anything by itself. Beta versions are only offered with **Include beta versions** on.
+Chatbox checks GitHub for new versions at startup and every 6 hours. When there's one, you get a notification once, and the tray menu and **Settings → Updates** offer it. Beta versions are only offered with **Include beta versions** on.
 
-If you installed Chatbox with Scoop, update it with `scoop update chatbox` instead of the offered download.
+How an update is installed depends on how you installed Chatbox:
+
+| Your install            | Updating                                                                                                       |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Windows, installer      | **Install and restart** does everything.                                                                       |
+| Windows, Scoop          | **Install and restart** closes Chatbox, runs `scoop update chatbox` in a terminal window, and starts it again. |
+| Windows, portable zip   | **Download** opens the new zip; replace the old folder with it.                                                |
+| macOS                   | **Install and restart** replaces the app. Chatbox must be in a folder you can change, normally Applications.   |
+| Linux, AppImage         | **Install and restart** replaces the AppImage file.                                                            |
+| Linux, `.deb` or `.rpm` | **Install and restart** downloads the package; your system asks for your password to install it.               |
+
+Before installing anything, Chatbox checks the download against the checksum GitHub publishes for it. If installing fails, it says why and offers the plain download instead.
+
+**Install updates automatically** (Windows installer and Linux AppImage only, off by default): Chatbox downloads new versions in the background. They start the next time you open Chatbox, or right away with **Restart to update** in the tray menu. Nothing restarts by itself.
 
 ### Where settings are stored
 

@@ -29,6 +29,7 @@ const DEFAULTS: Settings = {
   launchAtLogin: false,
   linuxNativeWayland: false,
   includeBetaUpdates: false,
+  autoUpdate: false,
   notifiedUpdateVersion: '',
 };
 
@@ -80,6 +81,7 @@ const VALIDATORS: { [K in SettingKey]: (v: unknown) => boolean } = {
   launchAtLogin: (v) => typeof v === 'boolean',
   linuxNativeWayland: (v) => typeof v === 'boolean',
   includeBetaUpdates: (v) => typeof v === 'boolean',
+  autoUpdate: (v) => typeof v === 'boolean',
   notifiedUpdateVersion: (v) => isText(v, 64),
 };
 

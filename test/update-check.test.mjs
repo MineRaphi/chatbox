@@ -34,6 +34,7 @@ const mac = {
   platform: 'darwin',
   arch: 'arm64',
   squirrel: false,
+  scoop: false,
   appImage: false,
   debian: false,
 };

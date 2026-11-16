@@ -5,6 +5,7 @@
     MonitorTarget,
     SettingKey,
     Settings,
+    InstallKind,
     UpdateStatus,
   } from '../../shared/ipc';
   import HotkeyRecorder from './HotkeyRecorder.svelte';
@@ -130,6 +131,19 @@
       newSet = '';
     } finally {
       addingSet = false;
+    }
+  }
+
+  /** What installing involves, where it's more than a click. */
+  function installHint(kind: InstallKind): string {
+    switch (kind) {
+      case 'deb':
+      case 'rpm':
+        return 'Your system asks for your password to install it.';
+      case 'scoop':
+        return 'Chatbox closes, updates through Scoop in a terminal window, and starts again.';
+      default:
+        return '';
     }
   }
 
@@ -370,20 +384,57 @@
       <p class="text-sm">
         Chatbox {update?.current ?? ''}
       </p>
-      {#if update?.state === 'available' && update.latest}
+      {#if update?.state === 'ready' && update.latest}
+        <div class="flex flex-col gap-2 rounded-md bg-emerald-950/60 p-3" role="status">
+          <p class="text-sm text-emerald-200">
+            Chatbox {update.latest.version} is installed. It starts the next time you open Chatbox.
+          </p>
+          <div class="flex gap-2">
+            <button
+              class="rounded-md bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-white"
+              onclick={() => window.chatbox.installUpdate()}
+            >
+              Restart now
+            </button>
+          </div>
+        </div>
+      {:else if update?.state === 'installing' && update.latest}
+        <div class="flex flex-col gap-2 rounded-md bg-emerald-950/60 p-3" role="status">
+          <p class="text-sm text-emerald-200">
+            Installing Chatbox {update.latest.version}…
+            {update.progress === null ? '' : `${Math.round(update.progress * 100)}%`}
+          </p>
+          <div class="h-1 overflow-hidden rounded-full bg-zinc-800">
+            <div
+              class="h-full bg-emerald-400 transition-[width]"
+              class:animate-pulse={update.progress === null}
+              style:width={update.progress === null ? '100%' : `${update.progress * 100}%`}
+            ></div>
+          </div>
+        </div>
+      {:else if update?.state === 'available' && update.latest}
         <div class="flex flex-col gap-2 rounded-md bg-emerald-950/60 p-3" role="status">
           <p class="text-sm text-emerald-200">
             Chatbox {update.latest.version} is available{update.latest.prerelease
               ? ' (beta)'
               : ''}.
           </p>
-          <div class="flex gap-2">
-            <button
-              class="rounded-md bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-white"
-              onclick={() => window.chatbox.openUpdate('download')}
-            >
-              Download
-            </button>
+          <div class="flex flex-wrap gap-2">
+            {#if update.canInstall}
+              <button
+                class="rounded-md bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-white"
+                onclick={() => window.chatbox.installUpdate()}
+              >
+                Install and restart
+              </button>
+            {:else}
+              <button
+                class="rounded-md bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-white"
+                onclick={() => window.chatbox.openUpdate('download')}
+              >
+                Download
+              </button>
+            {/if}
             <button
               class="rounded-md bg-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-700"
               onclick={() => window.chatbox.openUpdate('notes')}
@@ -391,7 +442,19 @@
               What's new
             </button>
           </div>
-          {#if update.latest.fileName}
+          {#if update.installError}
+            <p class="text-xs text-amber-300" role="alert">
+              Couldn't install it: {update.installError}.
+              <button
+                class="underline hover:text-amber-200"
+                onclick={() => window.chatbox.openUpdate('download')}
+              >
+                Download it instead
+              </button>
+            </p>
+          {:else if update.canInstall && installHint(update.installKind)}
+            <p class="text-xs text-zinc-400">{installHint(update.installKind)}</p>
+          {:else if !update.canInstall && update.latest.fileName}
             <p class="text-xs text-zinc-400">Downloads {update.latest.fileName}</p>
           {/if}
         </div>
@@ -416,6 +479,14 @@
             Check now
           </button>
         </div>
+      {/if}
+      {#if update?.canAutoUpdate}
+        <Toggle
+          label="Install updates automatically"
+          hint="Downloads new versions in the background. They start the next time you open Chatbox."
+          checked={settings.autoUpdate}
+          onChange={(v) => save('autoUpdate', v)}
+        />
       {/if}
       <Toggle
         label="Include beta versions"

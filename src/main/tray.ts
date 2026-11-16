@@ -16,6 +16,7 @@ import { getSetting, onSettingChange, setSetting } from './store';
 import {
   checkForUpdates,
   getUpdateStatus,
+  installUpdate,
   onUpdateStatus,
   openUpdate,
 } from './updates';
@@ -136,17 +137,38 @@ function iconState(status: ConnectionStatus, dnd: boolean): IconState {
   return status.state === 'connected' ? 'normal' : 'offline';
 }
 
-/** "Update available" when there is one, otherwise "Check for updates". */
+/** The update's state and what can be done about it. */
 function updateItems(): MenuItemConstructorOptions[] {
   const update = getUpdateStatus();
-  if (update.state === 'available' && update.latest) {
+  const version = update.latest?.version ?? '';
+  if (update.state === 'ready') {
     return [
       {
-        label: `Download Chatbox ${update.latest.version}…`,
-        click: () => openUpdate('download'),
+        label: `Restart to update to ${version}`,
+        click: () => void installUpdate(),
       },
+    ];
+  }
+  if (update.state === 'installing') {
+    const percent =
+      update.progress === null ? '' : ` ${Math.round(update.progress * 100)}%`;
+    return [
+      { label: `Installing Chatbox ${version}…${percent}`, enabled: false },
+    ];
+  }
+  if (update.state === 'available' && update.latest) {
+    return [
+      update.canInstall
+        ? {
+            label: `Install Chatbox ${version} and restart`,
+            click: () => void installUpdate(),
+          }
+        : {
+            label: `Download Chatbox ${version}…`,
+            click: () => openUpdate('download'),
+          },
       {
-        label: `What's new in ${update.latest.version}`,
+        label: `What's new in ${version}`,
         click: () => openUpdate('notes'),
       },
     ];
