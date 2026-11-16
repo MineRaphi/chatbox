@@ -7,6 +7,7 @@ import {
   type EmoteList,
   type ResolvedSet,
 } from '../shared/ipc';
+import { parseCache, type CacheFile } from './emote-cache';
 import { isEmoteId } from './overlay';
 import { getSettings, onSettingChange } from './store';
 
@@ -18,22 +19,10 @@ const FETCH_TIMEOUT_MS = 10_000;
 const ULID = /^[0-9A-Z]{26}$/;
 const SET_IN_INPUT = /(?:^|\/)([0-9A-Za-z]{26}|[0-9a-fA-F]{24})(?:$|[/?#])/;
 
-interface CachedSet {
-  fetchedAt: number;
-  emotes: Emote[];
-  /** Missing in caches written before set names were stored. */
-  name?: string;
-}
-
 interface FetchedSet {
   id: string;
   name: string;
   emotes: Emote[];
-}
-
-interface CacheFile {
-  version: 1;
-  sets: Record<string, CachedSet>;
 }
 
 let cache: CacheFile = { version: 1, sets: {} };
@@ -158,10 +147,7 @@ export async function resolveSet(input: unknown): Promise<ResolvedSet> {
 
 async function readCache(): Promise<void> {
   try {
-    const parsed = JSON.parse(await fs.readFile(cachePath(), 'utf8'));
-    if (parsed?.version === 1 && typeof parsed.sets === 'object') {
-      cache = parsed as CacheFile;
-    }
+    cache = parseCache(JSON.parse(await fs.readFile(cachePath(), 'utf8')));
   } catch {
     // No cache yet, or unreadable: start empty and fetch.
   }

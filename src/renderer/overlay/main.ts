@@ -2,6 +2,9 @@ import type { OverlayEmote } from '../../shared/ipc';
 import './overlay.css';
 
 const MAX_ON_SCREEN = 5;
+// Even with the limit off there is a ceiling, so a flood of emotes can't
+// freeze the overlay. It also caps how many images load at once.
+const HARD_MAX_ON_SCREEN = 100;
 const MARGIN_RATIO = 0.05;
 const RECENT_POSITIONS = 3;
 const POSITION_TRIES = 12;
@@ -18,6 +21,7 @@ interface Point {
 
 const onScreen: HTMLElement[] = [];
 const recent: Point[] = [];
+let loading = 0;
 
 function randomPosition(size: number, height: number): Point {
   const w = window.innerWidth;
@@ -78,18 +82,22 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 async function show(emote: OverlayEmote): Promise<void> {
+  if (loading >= HARD_MAX_ON_SCREEN) return;
   let img: HTMLImageElement;
+  loading++;
   try {
     // Wait for the image so the pop animation never plays on an empty box.
     img = await loadImage(emote.url);
   } catch {
     return;
+  } finally {
+    loading--;
   }
 
-  // Too many on screen: the oldest makes room (unless the limit is off).
-  if (emote.limitOnScreen) {
-    while (onScreen.length >= MAX_ON_SCREEN) remove(onScreen[0]!);
-  }
+  // Too many on screen: the oldest makes room. With the limit off, the
+  // hard ceiling still applies.
+  const max = emote.limitOnScreen ? MAX_ON_SCREEN : HARD_MAX_ON_SCREEN;
+  while (onScreen.length >= max) remove(onScreen[0]!);
 
   const height = emote.sizePx + (emote.from ? LABEL_SPACE_PX : 0);
   const { x, y } = randomPosition(emote.sizePx, height);

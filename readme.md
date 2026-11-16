@@ -66,11 +66,11 @@ From then on it opens normally. Chatbox appears in the menu bar and has no Dock 
 
 64-bit Intel/AMD (x86_64) only for now.
 
-| Distribution               | Download              | Install                                   | Remove                    |
-| -------------------------- | --------------------- | ----------------------------------------- | ------------------------- |
-| Ubuntu, Debian, Mint       | `chatbox_…_amd64.deb` | `sudo apt install ./chatbox_*_amd64.deb`  | `sudo apt remove chatbox` |
-| Fedora, openSUSE           | `chatbox-….x86_64.rpm`| `sudo dnf install ./chatbox-*.x86_64.rpm` | `sudo dnf remove chatbox` |
-| Arch, NixOS and the others | `Chatbox-….AppImage`  | none, see below                           | delete the file           |
+| Distribution               | Download               | Install                                   | Remove                    |
+| -------------------------- | ---------------------- | ----------------------------------------- | ------------------------- |
+| Ubuntu, Debian, Mint       | `chatbox_…_amd64.deb`  | `sudo apt install ./chatbox_*_amd64.deb`  | `sudo apt remove chatbox` |
+| Fedora, openSUSE           | `chatbox-….x86_64.rpm` | `sudo dnf install ./chatbox-*.x86_64.rpm` | `sudo dnf remove chatbox` |
+| Arch, NixOS and the others | `Chatbox-….AppImage`   | none, see below                           | delete the file           |
 
 After installing a `.deb` or `.rpm`, start Chatbox from the app menu or with `chatbox`.
 
