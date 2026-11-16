@@ -147,3 +147,6 @@ out/
 
 # Downloaded build tools (AppImage runtime)
 /build/
+
+# macOS Finder metadata
+.DS_Store
