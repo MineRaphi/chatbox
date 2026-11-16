@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { accessSync, constants, existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -11,6 +11,29 @@ import path from 'node:path';
 
 const dataHome = (): string =>
   process.env.XDG_DATA_HOME ?? path.join(os.homedir(), '.local', 'share');
+
+/** Whether a program of that name can be started from PATH. */
+function onPath(name: string): boolean {
+  return (process.env.PATH ?? '').split(path.delimiter).some((dir) => {
+    try {
+      accessSync(path.join(dir, name), constants.X_OK);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+}
+
+/**
+ * The command line that starts this AppImage, for .desktop files. NixOS
+ * can't run an AppImage directly (unless binfmt is set up for it), so
+ * where appimage-run is installed, it does the starting.
+ */
+export function appImageExec(appImage: string): string {
+  return existsSync('/etc/NIXOS') && onPath('appimage-run')
+    ? `appimage-run "${appImage}"`
+    : `"${appImage}"`;
+}
 
 /** Writes `content` unless the file already has exactly that content. */
 async function writeIfChanged(
@@ -31,12 +54,6 @@ async function apply(appImage: string): Promise<void> {
     await fs.readFile(path.join(process.resourcesPath, 'chatbox.png')),
   );
 
-  // NixOS can't start an AppImage directly (unless binfmt is set up), so the
-  // friends there run it through appimage-run; the menu entry does the same.
-  const exec = existsSync('/etc/NIXOS')
-    ? `appimage-run "${appImage}"`
-    : `"${appImage}"`;
-
   await writeIfChanged(
     path.join(dataHome(), 'applications', 'chatbox.desktop'),
     [
@@ -45,7 +62,7 @@ async function apply(appImage: string): Promise<void> {
       'Name=Chatbox',
       'GenericName=Emote overlay',
       'Comment=Send 7TV emotes to your group',
-      `Exec=${exec}`,
+      `Exec=${appImageExec(appImage)}`,
       `Icon=${icon}`,
       'Terminal=false',
       'Categories=Network;Chat;',

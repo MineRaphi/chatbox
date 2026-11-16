@@ -10,6 +10,7 @@ import { initHotkey } from './hotkey';
 import { registerIpc } from './ipc';
 import { initOverlays } from './overlay';
 import { initPicker, showPicker } from './picker';
+import { hardenWebContents } from './harden';
 import { relaunchOnX11IfNeeded } from './session';
 import { getSetting } from './store';
 import { createTray } from './tray';
@@ -38,7 +39,7 @@ const gotLock = app.requestSingleInstanceLock();
 
 // Linux on Wayland: XWayland by default so overlays can stay on top (see
 // session.ts). After the dev profile, because it reads a setting.
-const relaunchingOnX11 = gotLock && relaunchOnX11IfNeeded();
+const x11Copy = gotLock ? relaunchOnX11IfNeeded() : null;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -59,13 +60,9 @@ if (process.platform === 'win32') {
   app.setAppUserModelId('com.squirrel.chatbox.Chatbox');
 }
 
-if (relaunchingOnX11) {
-  // The X11 copy has taken over.
-  app.exit(0);
-} else if (!gotLock) {
-  app.quit();
-} else {
+function startApp(): void {
   app.on('second-instance', () => showPicker());
+  hardenWebContents();
 
   // Tray app: closing every window must not quit.
   app.on('window-all-closed', () => {});
@@ -111,4 +108,22 @@ if (relaunchingOnX11) {
   });
 
   app.on('will-quit', () => globalShortcut.unregisterAll());
+}
+
+if (x11Copy) {
+  // Hand over to the X11 copy, unless it fails to start: then run here,
+  // natively on Wayland, which beats not starting at all.
+  void x11Copy.then((running) => {
+    if (running) {
+      app.exit(0);
+    } else if (app.requestSingleInstanceLock()) {
+      startApp();
+    } else {
+      app.quit();
+    }
+  });
+} else if (!gotLock) {
+  app.quit();
+} else {
+  startApp();
 }

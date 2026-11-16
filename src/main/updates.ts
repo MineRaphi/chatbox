@@ -122,7 +122,8 @@ export function checkForUpdates(): Promise<void> {
       const latest = pickUpdate(
         await res.json(),
         status.current,
-        getSetting('includeBetaUpdates'),
+        // Scoop only carries full releases, so offer nothing else there.
+        kind !== 'scoop' && getSetting('includeBetaUpdates'),
       );
       setStatus({
         state: latest ? 'available' : 'up-to-date',

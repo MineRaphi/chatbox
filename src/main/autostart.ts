@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { app } from 'electron';
+import { appImageExec } from './desktop-entry';
 import { getSetting, onSettingChange } from './store';
 
 // Electron has no login-item API on Linux; the freedesktop way is a
@@ -20,7 +21,8 @@ async function applyLinux(enabled: boolean): Promise<void> {
     return;
   }
   // APPIMAGE is set when running from an AppImage; otherwise use the binary.
-  const exec = process.env.APPIMAGE ?? process.execPath;
+  const appImage = process.env.APPIMAGE;
+  const exec = appImage ? appImageExec(appImage) : `"${process.execPath}"`;
   await fs.mkdir(path.dirname(file), { recursive: true });
   await fs.writeFile(
     file,
@@ -28,7 +30,7 @@ async function applyLinux(enabled: boolean): Promise<void> {
       '[Desktop Entry]',
       'Type=Application',
       'Name=Chatbox',
-      `Exec="${exec}"`,
+      `Exec=${exec}`,
       'X-GNOME-Autostart-enabled=true',
       '',
     ].join('\n'),

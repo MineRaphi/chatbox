@@ -71,7 +71,7 @@ scoop install chatbox
 
 Start Chatbox from the Start menu. To update it later, quit Chatbox from its tray menu and run `scoop update chatbox`. To remove it: `scoop uninstall chatbox`.
 
-Scoop installs the newest published version, beta versions included.
+Scoop only offers full releases, no beta versions.
 
 **After installing:** Windows often hides new tray icons behind the **^** arrow next to the clock; drag the Chatbox icon onto the taskbar to keep it visible.
 
@@ -94,7 +94,7 @@ After installing a `.deb` or `.rpm`, start Chatbox from the app menu or with `ch
 **The AppImage** is a single file that runs without installation. Put it where you want to keep it, then:
 
 - **Arch and most others:** `chmod +x Chatbox-*.AppImage`, then run it. AppImages need FUSE (`fuse3` on Arch); without it, run it with `--appimage-extract-and-run`.
-- **NixOS:** run it with `nix run nixpkgs#appimage-run -- ./Chatbox-*.AppImage`, or add `appimage-run` to `environment.systemPackages` and use `appimage-run ./Chatbox-*.AppImage`. **Launch at login** starts the AppImage file directly, which needs this in `configuration.nix`:
+- **NixOS:** run it with `nix run nixpkgs#appimage-run -- ./Chatbox-*.AppImage`, or add `appimage-run` to `environment.systemPackages` and use `appimage-run ./Chatbox-*.AppImage`. The app menu entry and **Launch at login** start Chatbox through `appimage-run` when it's installed. Without it they start the AppImage file directly, which needs this in `configuration.nix`:
 
   ```nix
   programs.appimage = {
@@ -187,14 +187,14 @@ Chatbox checks GitHub for new versions at startup and every 6 hours. When there'
 
 How an update is installed depends on how you installed Chatbox:
 
-| Your install            | Updating                                                                                                       |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Windows, installer      | **Install and restart** does everything.                                                                       |
-| Windows, Scoop          | **Install and restart** closes Chatbox, runs `scoop update chatbox` in a terminal window, and starts it again. |
-| Windows, portable zip   | **Download** opens the new zip; replace the old folder with it.                                                |
-| macOS                   | **Install and restart** replaces the app. Chatbox must be in a folder you can change, normally Applications.   |
-| Linux, AppImage         | **Install and restart** replaces the AppImage file.                                                            |
-| Linux, `.deb` or `.rpm` | **Install and restart** downloads the package; your system asks for your password to install it.               |
+| Your install            | Updating                                                                                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Windows, installer      | **Install and restart** does everything.                                                                                           |
+| Windows, Scoop          | **Install and restart** closes Chatbox, runs `scoop update chatbox` in a terminal window, and starts it again. Full releases only. |
+| Windows, portable zip   | **Download** opens the new zip; replace the old folder with it.                                                                    |
+| macOS                   | **Install and restart** replaces the app. Chatbox must be in a folder you can change, normally Applications.                       |
+| Linux, AppImage         | **Install and restart** replaces the AppImage file.                                                                                |
+| Linux, `.deb` or `.rpm` | **Install and restart** downloads the package; your system asks for your password to install it.                                   |
 
 Before installing anything, Chatbox checks the download against the checksum GitHub publishes for it. If installing fails, it says why and offers the plain download instead.
 
@@ -333,7 +333,7 @@ Dev runs use their own settings folder, **Chatbox Dev**, so `npm start` and an i
 2. Tag and push: `git tag v2.1.0 && git push origin main v2.1.0`.
 3. The workflow builds macOS (Apple Silicon and Intel), Windows and Linux and attaches everything to a **draft** release. When all four builds are done, open the draft on GitHub, check it, and click **Publish**.
 
-Publishing also starts a second workflow (`.github/workflows/scoop.yml`), which points the Scoop manifest, `bucket/chatbox.json`, at the new version and commits it to `main`. Pull before you continue working.
+Publishing a full release (not a beta) also starts a second workflow (`.github/workflows/scoop.yml`), which points the Scoop manifest, `bucket/chatbox.json`, at the new version and commits it to `main`. Pull before you continue working.
 
 The tag has to match the version in `package.json`, or the workflow stops. A version with a suffix, like `2.1.0-beta`, becomes a pre-release, so the Releases page's "latest" link keeps pointing at the last stable version. Running the workflow by hand from the Actions tab only builds; the files are then under the run's artifacts.
 

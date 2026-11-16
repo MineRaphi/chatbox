@@ -488,12 +488,18 @@
           onChange={(v) => save('autoUpdate', v)}
         />
       {/if}
-      <Toggle
-        label="Include beta versions"
-        hint="Also offer test versions before they're final."
-        checked={settings.includeBetaUpdates}
-        onChange={(v) => save('includeBetaUpdates', v)}
-      />
+      {#if update?.installKind === 'scoop'}
+        <p class="text-xs text-zinc-500">
+          Installed with Scoop, which only offers full releases, no beta versions.
+        </p>
+      {:else}
+        <Toggle
+          label="Include beta versions"
+          hint="Also offer test versions before they're final."
+          checked={settings.includeBetaUpdates}
+          onChange={(v) => save('includeBetaUpdates', v)}
+        />
+      {/if}
     </section>
 
         <!-- General -->

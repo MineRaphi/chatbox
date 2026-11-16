@@ -16,31 +16,39 @@ import { getSetting } from './store';
 // app.relaunch: on Linux, relaunch goes through a helper process and its
 // X11 copy silently never ran on GitHub's Ubuntu runner. A spawned copy
 // starts at once and shares stdout/stderr, so any failure shows up in logs.
+// If the copy can't start or dies right away, this process carries on
+// natively instead of leaving the user with nothing.
 
 export const X11_FLAG = '--ozone-platform=x11';
 
 let waylandSession = false;
 let nativeWayland = false;
 
+// How long the X11 copy has to stay alive before this process trusts it.
+const X11_COPY_GRACE_MS = 2_000;
+
 /**
  * On a Wayland session (unless native Wayland mode is on), make sure this
- * process runs on X11. Returns true when it started an X11 copy of itself,
- * in which case the caller must exit right away. Call only while holding
- * the single-instance lock (so a second launch, e.g. from a window
- * manager keybind, goes straight to the running Chatbox instead of
- * starting a copy first); it hands the lock over to the copy. Call after
- * the settings folder is final (dev profile), since it reads a setting.
+ * process runs on X11. Returns null when nothing has to happen. Otherwise
+ * it has started an X11 copy of itself and returns a promise: true once
+ * that copy is running (the caller must then exit), false if it couldn't
+ * be started or died at once (the caller then starts up here, natively).
+ * Call only while holding the single-instance lock (so a second launch,
+ * e.g. from a window manager keybind, goes straight to the running Chatbox
+ * instead of starting a copy first); the lock is handed over to the copy.
+ * Call after the settings folder is final (dev profile), since it reads a
+ * setting.
  */
-export function relaunchOnX11IfNeeded(): boolean {
-  if (process.platform !== 'linux') return false;
+export function relaunchOnX11IfNeeded(): Promise<boolean> | null {
+  if (process.platform !== 'linux') return null;
   waylandSession =
     process.env.XDG_SESSION_TYPE === 'wayland' ||
     Boolean(process.env.WAYLAND_DISPLAY);
-  if (!waylandSession) return false;
+  if (!waylandSession) return null;
 
   // What this process actually runs on (the flag decides, not the setting).
   nativeWayland = !process.argv.includes(X11_FLAG);
-  if (!nativeWayland || getSetting('linuxNativeWayland')) return false;
+  if (!nativeWayland || getSetting('linuxNativeWayland')) return null;
 
   // An AppImage must be started through the AppImage file, not the binary
   // inside its temporary mount.
@@ -52,11 +60,32 @@ export function relaunchOnX11IfNeeded(): boolean {
   // The copy needs the single-instance lock.
   app.releaseSingleInstanceLock();
   const child = spawn(executable, args, { detached: true, stdio: 'inherit' });
-  child.on('error', (err) => {
-    console.error('[session] could not start the XWayland copy:', err);
+
+  return new Promise((resolve) => {
+    const failed = (why: unknown): void => {
+      clearTimeout(timer);
+      console.error(
+        '[session] the XWayland copy did not start; running natively on Wayland instead (emotes may not stay on top):',
+        why,
+      );
+      resolve(false);
+    };
+    // Still alive after the grace period: it has taken over.
+    const timer = setTimeout(() => {
+      child.removeAllListeners();
+      child.unref();
+      resolve(true);
+    }, X11_COPY_GRACE_MS);
+    child.once('error', failed);
+    child.once('exit', (code, signal) => {
+      if (code === 0) {
+        clearTimeout(timer);
+        resolve(true); // it finished by itself, e.g. the user quit it
+      } else {
+        failed(`exit code ${code ?? signal}`);
+      }
+    });
   });
-  child.unref();
-  return true;
 }
 
 export function displayServerInfo(): {
