@@ -66,20 +66,24 @@ export interface InstallInfo {
   debian: boolean;
 }
 
-/** The release file that fits `info`, as a pattern on file names. */
+/**
+ * The release file that fits `info`, as a pattern on file names. The names
+ * are given by scripts/collect-release-files.mjs.
+ */
 export function assetPatternFor(info: InstallInfo): RegExp | null {
-  const arch = info.arch === 'arm64' ? 'arm64' : 'x64';
   switch (info.platform) {
     case 'darwin':
-      return new RegExp(`^Chatbox-darwin-${arch}-.+\\.zip$`);
+      return info.arch === 'arm64'
+        ? /^Chatbox-.+-macOS-AppleSilicon\.zip$/
+        : /^Chatbox-.+-macOS-Intel\.zip$/;
     case 'win32':
       return info.squirrel
-        ? /^Chatbox-Setup\.exe$/
-        : /^Chatbox-win32-x64-.+\.zip$/;
+        ? /^Chatbox-.+-Windows-Setup\.exe$/
+        : /^Chatbox-.+-Windows-Portable\.zip$/;
     case 'linux':
-      if (info.appImage) return /^Chatbox-.+-x64\.AppImage$/;
-      if (info.debian) return /^chatbox_.+_amd64\.deb$/;
-      return /^chatbox-.+\.x86_64\.rpm$/;
+      if (info.appImage) return /^Chatbox-.+-Linux\.AppImage$/;
+      if (info.debian) return /^Chatbox-.+-Linux\.deb$/;
+      return /^Chatbox-.+-Linux\.rpm$/;
     default:
       return null;
   }

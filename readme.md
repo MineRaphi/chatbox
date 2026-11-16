@@ -45,7 +45,7 @@ Chatbox isn't signed with a paid Apple or Microsoft certificate, so macOS and Wi
 
 ### macOS
 
-1. Download the zip for your Mac: `Chatbox-darwin-arm64-….zip` for Apple Silicon (M1 and newer), `Chatbox-darwin-x64-….zip` for Intel. Not sure? Apple menu → About This Mac: "Chip: Apple M…" means Apple Silicon.
+1. Download the zip for your Mac: `Chatbox-…-macOS-AppleSilicon.zip` for Apple Silicon (M1 and newer), `Chatbox-…-macOS-Intel.zip` for Intel. Not sure? Apple menu → About This Mac: "Chip: Apple M…" means Apple Silicon.
 2. Double-click the zip and move `Chatbox.app` to **Applications**.
 3. Open it. macOS says it can't check the app for malware; click **Done** (not Move to Trash).
 4. Open **System Settings → Privacy & Security**, scroll down to "Chatbox was blocked", and click **Open Anyway**. Confirm with your password.
@@ -58,7 +58,7 @@ There are two ways to install Chatbox: the installer, or [Scoop](https://scoop.s
 
 **With the installer:**
 
-1. Download `Chatbox-Setup.exe` and run it.
+1. Download `Chatbox-…-Windows-Setup.exe` and run it.
 2. If SmartScreen shows "Windows protected your PC", click **More info → Run anyway**.
 3. Chatbox installs for your user (no admin rights needed), adds a Start menu entry and starts in the tray.
 
@@ -75,7 +75,7 @@ Scoop installs the newest published version, beta versions included.
 
 **After installing:** Windows often hides new tray icons behind the **^** arrow next to the clock; drag the Chatbox icon onto the taskbar to keep it visible.
 
-**Portable version:** `Chatbox-win32-x64-….zip` needs no installation. Unzip it anywhere and run `Chatbox.exe`.
+**Portable version:** `Chatbox-…-Windows-Portable.zip` needs no installation. Unzip it anywhere and run `Chatbox.exe`.
 
 **Windows Defender:** if it blocks or removes files, open **Windows Security → Virus & threat protection → Protection history**, select the Chatbox entry, and choose **Allow**.
 
@@ -83,11 +83,11 @@ Scoop installs the newest published version, beta versions included.
 
 64-bit Intel/AMD (x86_64) only for now.
 
-| Distribution               | Download               | Install                                   | Remove                    |
-| -------------------------- | ---------------------- | ----------------------------------------- | ------------------------- |
-| Ubuntu, Debian, Mint       | `chatbox_…_amd64.deb`  | `sudo apt install ./chatbox_*_amd64.deb`  | `sudo apt remove chatbox` |
-| Fedora, openSUSE           | `chatbox-….x86_64.rpm` | `sudo dnf install ./chatbox-*.x86_64.rpm` | `sudo dnf remove chatbox` |
-| Arch, NixOS and the others | `Chatbox-….AppImage`   | none, see below                           | delete the file           |
+| Distribution               | Download                   | Install                                  | Remove                    |
+| -------------------------- | -------------------------- | ---------------------------------------- | ------------------------- |
+| Ubuntu, Debian, Mint       | `Chatbox-…-Linux.deb`      | `sudo apt install ./Chatbox-*-Linux.deb` | `sudo apt remove chatbox` |
+| Fedora, openSUSE           | `Chatbox-…-Linux.rpm`      | `sudo dnf install ./Chatbox-*-Linux.rpm` | `sudo dnf remove chatbox` |
+| Arch, NixOS and the others | `Chatbox-…-Linux.AppImage` | none, see below                          | delete the file           |
 
 After installing a `.deb` or `.rpm`, start Chatbox from the app menu or with `chatbox`.
 

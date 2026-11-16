@@ -39,9 +39,9 @@ const mac = {
 };
 
 const macFiles = (ver) => [
-  `Chatbox-darwin-arm64-${ver}.zip`,
-  `Chatbox-darwin-x64-${ver}.zip`,
-  'Chatbox-Setup.exe',
+  `Chatbox-${ver}-macOS-AppleSilicon.zip`,
+  `Chatbox-${ver}-macOS-Intel.zip`,
+  `Chatbox-${ver}-Windows-Setup.exe`,
 ];
 const feed = [
   rel('v2.0.0-beta', { prerelease: true, files: macFiles('2.0.0-beta') }),
@@ -55,7 +55,7 @@ test('stable only: newest stable, never drafts', () => {
   const u = m.pickUpdate(feed, '2.0.1-beta', false, mac);
   assert.equal(u.version, '2.0.2');
   assert.equal(u.prerelease, false);
-  assert.equal(u.fileName, 'Chatbox-darwin-arm64-2.0.2.zip');
+  assert.equal(u.fileName, 'Chatbox-2.0.2-macOS-AppleSilicon.zip');
   assert.ok(u.downloadUrl.startsWith(`${base}/download/v2.0.2/`));
 });
 
@@ -79,11 +79,11 @@ test('links outside the repo are ignored', () => {
   const evilAsset = [rel('v9.0.0', { files: [] })];
   evilAsset[0].assets = [
     {
-      name: 'Chatbox-darwin-arm64-9.0.0.zip',
+      name: 'Chatbox-9.0.0-macOS-AppleSilicon.zip',
       browser_download_url: 'https://evil.example/a.zip',
     },
     {
-      name: 'Chatbox-darwin-x64-9.0.0.zip',
+      name: 'Chatbox-9.0.0-macOS-Intel.zip',
       browser_download_url: 'https://evil.example/b.zip',
     },
   ];
@@ -106,15 +106,15 @@ test('garbage from the API throws, odd entries are skipped', () => {
 test('the right file for each platform and install type', () => {
   // File names as the release workflow produces them (from v2.0.1-beta).
   const files = [
-    'Chatbox-darwin-arm64-2.0.2.zip',
-    'Chatbox-darwin-x64-2.0.2.zip',
-    'Chatbox-Setup.exe',
-    'Chatbox-win32-x64-2.0.2.zip',
+    'Chatbox-2.0.2-macOS-AppleSilicon.zip',
+    'Chatbox-2.0.2-macOS-Intel.zip',
+    'Chatbox-2.0.2-Windows-Setup.exe',
+    'Chatbox-2.0.2-Windows-Portable.zip',
     'chatbox-2.0.2-full.nupkg',
     'RELEASES',
-    'Chatbox-2.0.2-x64.AppImage',
-    'chatbox_2.0.2_amd64.deb',
-    'chatbox-2.0.2-1.x86_64.rpm',
+    'Chatbox-2.0.2-Linux.AppImage',
+    'Chatbox-2.0.2-Linux.deb',
+    'Chatbox-2.0.2-Linux.rpm',
   ];
   const release = [rel('v2.0.2', { files })];
   const pick = (install) =>
@@ -122,31 +122,31 @@ test('the right file for each platform and install type', () => {
 
   assert.equal(
     pick({ platform: 'darwin', arch: 'arm64' }),
-    'Chatbox-darwin-arm64-2.0.2.zip',
+    'Chatbox-2.0.2-macOS-AppleSilicon.zip',
   );
   assert.equal(
     pick({ platform: 'darwin', arch: 'x64' }),
-    'Chatbox-darwin-x64-2.0.2.zip',
+    'Chatbox-2.0.2-macOS-Intel.zip',
   );
   assert.equal(
     pick({ platform: 'win32', arch: 'x64', squirrel: true }),
-    'Chatbox-Setup.exe',
+    'Chatbox-2.0.2-Windows-Setup.exe',
   );
   assert.equal(
     pick({ platform: 'win32', arch: 'x64', squirrel: false }),
-    'Chatbox-win32-x64-2.0.2.zip',
+    'Chatbox-2.0.2-Windows-Portable.zip',
   );
   assert.equal(
     pick({ platform: 'linux', arch: 'x64', appImage: true, debian: true }),
-    'Chatbox-2.0.2-x64.AppImage',
+    'Chatbox-2.0.2-Linux.AppImage',
   );
   assert.equal(
     pick({ platform: 'linux', arch: 'x64', debian: true }),
-    'chatbox_2.0.2_amd64.deb',
+    'Chatbox-2.0.2-Linux.deb',
   );
   assert.equal(
     pick({ platform: 'linux', arch: 'x64', debian: false }),
-    'chatbox-2.0.2-1.x86_64.rpm',
+    'Chatbox-2.0.2-Linux.rpm',
   );
   assert.equal(pick({ platform: 'freebsd', arch: 'x64' }), null);
 });

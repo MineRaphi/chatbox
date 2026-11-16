@@ -7,7 +7,6 @@ import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
-import { PublisherGitHub } from '@electron-forge/publisher-github';
 import { MakerAppImage } from '@reforged/maker-appimage';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
@@ -18,9 +17,8 @@ const run = promisify(execFile);
 const { version } = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
 ) as { version: string };
-// `2.0.0-beta` is a pre-release. Windows file versions must be plain numbers,
-// so the build number keeps only the `2.0.0` part.
-const isPrerelease = version.includes('-');
+// Windows file versions must be plain numbers, so for `2.0.0-beta` the
+// build number keeps only the `2.0.0` part.
 const numericVersion = version.split('-')[0]!;
 
 const config: ForgeConfig = {
@@ -112,15 +110,6 @@ const config: ForgeConfig = {
         icon: './icons/chatbox.png',
         categories: ['Network'],
       },
-    }),
-  ],
-  publishers: [
-    // `npm run release` uploads the build to a draft release for the
-    // version in package.json; it's only published once you approve it.
-    new PublisherGitHub({
-      repository: { owner: 'MineRaphi', name: 'chatbox' },
-      draft: true,
-      prerelease: isPrerelease,
     }),
   ],
   plugins: [

@@ -123,7 +123,7 @@ jobs:
           scripts/fetch-appimage-runtime.sh
 
       # Build first and test; for a release, the same files are uploaded
-      # afterwards (release --from-make), so nothing untested gets published.
+      # afterwards, so nothing untested gets published.
       - name: Build
         run: npm run make -- --arch=${{ matrix.arch }}
 
@@ -183,23 +183,23 @@ jobs:
           FONTCONFIG_FILE=/tmp/chatbox-fonts/fonts.conf SECONDS_TO_RUN=45 \
             scripts/smoke-test.sh nix run nixpkgs#appimage-run -- "$appimage"
 
+      # out/release gets the tested files under their download names,
+      # e.g. Chatbox-2.1.0-Windows-Setup.exe.
+      - name: Name the files for the release
+        run: node scripts/collect-release-files.mjs
+
       - name: Attach to the draft release
         if: env.IS_RELEASE == 'true'
-        run: npm run release -- --from-make
+        shell: bash
+        run: gh release upload "$GITHUB_REF_NAME" out/release/* --clobber
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
 
       - name: Keep the build as an artifact
         if: env.IS_RELEASE != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: chatbox-${{ runner.os }}-${{ matrix.arch }}
-          path: |
-            out/make/**/*.zip
-            out/make/**/*.exe
-            out/make/**/RELEASES
-            out/make/**/*.nupkg
-            out/make/**/*.deb
-            out/make/**/*.rpm
-            out/make/**/*.AppImage
+          path: out/release/*
           retention-days: 14

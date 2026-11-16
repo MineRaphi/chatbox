@@ -18,8 +18,9 @@ if (
 if (release.draft) throw new Error(`${tag} is still a draft`);
 
 // Scoop installs the portable zip: no installer, nothing outside its folder.
+// (Releases up to 2.0.11-beta called it Chatbox-win32-x64-<version>.zip.)
 const asset = (release.assets ?? []).find((a) =>
-  /^Chatbox-win32-x64-.+\.zip$/.test(a.name),
+  /^Chatbox-(.+-Windows-Portable|win32-x64-.+)\.zip$/.test(a.name),
 );
 if (!asset) throw new Error(`${tag} has no Windows zip`);
 
