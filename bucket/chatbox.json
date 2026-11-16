@@ -1,12 +1,12 @@
 {
-  "version": "2.0.12-beta",
+  "version": "2.0.13-beta",
   "description": "Send 7TV emotes that pop up on top of your friends' screens",
   "homepage": "https://github.com/MineRaphi/chatbox",
   "license": "GPL-3.0-only",
   "architecture": {
     "64bit": {
-      "url": "https://github.com/MineRaphi/chatbox/releases/download/v2.0.12-beta/Chatbox-2.0.12-beta-Windows-Portable.zip",
-      "hash": "f2bf39cbb0ac3a845c08c69ec6ef4ebdd36c390e6e79849eb89ee107404aa510"
+      "url": "https://github.com/MineRaphi/chatbox/releases/download/v2.0.13-beta/Chatbox-2.0.13-beta-Windows-Portable.zip",
+      "hash": "287b94c31599e9537e28f7f3b14a85989c2b2ada122d62484c834b90f81977ed"
     }
   },
   "shortcuts": [
