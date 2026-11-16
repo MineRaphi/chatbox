@@ -87,11 +87,11 @@ Scoop only offers full releases, no beta versions.
 | -------------------------- | -------------------------- | ---------------------------------------- | ------------------------- |
 | Ubuntu, Debian, Mint       | `Chatbox-…-Linux.deb`      | `sudo apt install ./Chatbox-*-Linux.deb` | `sudo apt remove chatbox` |
 | Fedora, openSUSE           | `Chatbox-…-Linux.rpm`      | `sudo dnf install ./Chatbox-*-Linux.rpm` | `sudo dnf remove chatbox` |
-| Arch, NixOS and the others | `Chatbox-…-Linux.AppImage` | none, see below                          | delete the file           |
+| Arch, NixOS and the others | `Chatbox-…-Linux.AppImage` | none, see below                          | see below                 |
 
 After installing a `.deb` or `.rpm`, start Chatbox from the app menu or with `chatbox`.
 
-**The AppImage** is a single file that runs without installation. Put it where you want to keep it, then:
+**The AppImage** is a single file that runs without installation. Download it, then start it once:
 
 - **Arch and most others:** `chmod +x Chatbox-*.AppImage`, then run it. AppImages need FUSE (`fuse3` on Arch); without it, run it with `--appimage-extract-and-run`.
 - **NixOS:** run it with `nix run nixpkgs#appimage-run -- ./Chatbox-*.AppImage`, or add `appimage-run` to `environment.systemPackages` and use `appimage-run ./Chatbox-*.AppImage`. The app menu entry and **Launch at login** start Chatbox through `appimage-run` when it's installed. Without it they start the AppImage file directly, which needs this in `configuration.nix`:
@@ -103,7 +103,15 @@ After installing a `.deb` or `.rpm`, start Chatbox from the app menu or with `ch
   };
   ```
 
-On its first start, the AppImage adds Chatbox to your app menu. It updates that entry on every start, so moving the file is fine. To remove the entry, delete `~/.local/share/applications/chatbox.desktop`.
+On that first start, Chatbox sets itself up and tells you with a notification:
+
+- It moves the file to `~/Applications/Chatbox.AppImage`, so it has one fixed place that stays the same after updates.
+- It adds Chatbox to your app menu.
+- It adds a `chatbox` command in `~/.local/bin`, for terminals and keybinds (if that folder is on your `PATH`, as on most systems).
+
+From then on, start it from the app menu or with `chatbox`. If you later download a newer AppImage and start it, it replaces the one in `~/Applications`; an older one never does.
+
+To remove Chatbox, delete `~/Applications/Chatbox.AppImage`, `~/.local/bin/chatbox` and `~/.local/share/applications/chatbox.desktop`.
 
 The AppImage uses Chromium's user-namespace sandbox, which Arch and NixOS allow. Ubuntu 24.04 and newer restrict it, so on Ubuntu use the `.deb`.
 
@@ -193,7 +201,7 @@ How an update is installed depends on how you installed Chatbox:
 | Windows, Scoop          | **Install and restart** closes Chatbox, runs `scoop update chatbox` in a terminal window, and starts it again. Full releases only. |
 | Windows, portable zip   | **Download** opens the new zip; replace the old folder with it.                                                                    |
 | macOS                   | **Install and restart** replaces the app. Chatbox must be in a folder you can change, normally Applications.                       |
-| Linux, AppImage         | **Install and restart** replaces the AppImage file.                                                                                |
+| Linux, AppImage         | **Install and restart** replaces the file in `~/Applications`.                                                                     |
 | Linux, `.deb` or `.rpm` | **Install and restart** downloads the package; your system asks for your password to install it.                                   |
 
 Before installing anything, Chatbox checks the download against the checksum GitHub publishes for it. If installing fails, it says why and offers the plain download instead.
@@ -252,10 +260,10 @@ hl.window_rule({
 })
 ```
 
-For the hotkey, bind a key that starts Chatbox again, which opens the picker of the running one. Replace the command with the one you start Chatbox with:
+For the hotkey, bind a key that starts Chatbox again, which opens the picker of the running one. With the AppImage that's the `chatbox` command it set up; with a `.deb` or `.rpm`, plain `chatbox`:
 
 ```lua
-hl.bind("CTRL + SHIFT + E", hl.dsp.exec_cmd("appimage-run /path/to/Chatbox.AppImage"))
+hl.bind("CTRL + SHIFT + E", hl.dsp.exec_cmd("~/.local/bin/chatbox"))
 ```
 
 `hyprctl clients` shows how Hyprland sees each Chatbox window (class, title, floating, pinned).

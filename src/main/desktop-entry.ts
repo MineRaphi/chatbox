@@ -2,6 +2,9 @@ import { accessSync, constants, existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { Notification, app } from 'electron';
+import { settleAppImage, takeMoveNotice } from './appimage-home';
+import { compareVersions, parseVersion } from './update-check';
 
 // An AppImage is a single file that runs without installing, so unlike the
 // .deb and .rpm nothing puts Chatbox into the app menu. When running from
@@ -72,9 +75,54 @@ async function apply(appImage: string): Promise<void> {
   );
 }
 
+const homeRecordFile = (): string =>
+  path.join(app.getPath('userData'), 'appimage-home.json');
+
+function isNewer(a: string, b: string): boolean {
+  const va = parseVersion(a);
+  const vb = parseVersion(b);
+  return va !== null && vb !== null && compareVersions(va, vb) > 0;
+}
+
+/**
+ * Move the AppImage to its permanent home, ~/Applications/Chatbox.AppImage
+ * (see appimage-home.ts), and point $APPIMAGE there, which everything else
+ * reads: the X11 restart, the menu entry, launch at login and updates.
+ * Call early, while holding the single-instance lock.
+ * CHATBOX_KEEP_APPIMAGE_IN_PLACE=1 switches it off (the release build's
+ * startup tests run the AppImage from the build folder and need it there).
+ */
+export function settleAppImageHome(): void {
+  const appImage = process.env.APPIMAGE;
+  if (process.platform !== 'linux' || !appImage || !app.isPackaged) return;
+  if (process.env.CHATBOX_KEEP_APPIMAGE_IN_PLACE === '1') return;
+  const settled = settleAppImage({
+    appImage,
+    homeDir: os.homedir(),
+    version: app.getVersion(),
+    recordFile: homeRecordFile(),
+    isNewer,
+    launcherExec: appImageExec,
+  });
+  if (settled !== appImage) {
+    console.log(`[appimage] moved ${appImage} to ${settled}`);
+    process.env.APPIMAGE = settled;
+  }
+}
+
 export function initDesktopEntry(): void {
   const appImage = process.env.APPIMAGE;
   if (process.platform !== 'linux' || !appImage) return;
+
+  // Told once, by whichever copy starts up after the move.
+  const movedFrom = takeMoveNotice(homeRecordFile());
+  if (movedFrom && Notification.isSupported()) {
+    new Notification({
+      title: 'Chatbox moved itself to ~/Applications',
+      body: `It was in ${path.dirname(movedFrom)}. From now on, start it from the app menu or with "chatbox" in a terminal.`,
+    }).show();
+  }
+
   apply(appImage).catch((err) =>
     console.warn('[desktop-entry] could not add the app menu entry:', err),
   );

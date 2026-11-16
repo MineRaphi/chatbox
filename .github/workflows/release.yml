@@ -26,6 +26,10 @@ concurrency:
 
 env:
   NODE_VERSION: '22'
+  # An AppImage normally moves itself to ~/Applications on its first start.
+  # The startup tests run it from the build folder, where the release step
+  # still needs it afterwards.
+  CHATBOX_KEEP_APPIMAGE_IN_PLACE: '1'
   IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
 
 jobs:

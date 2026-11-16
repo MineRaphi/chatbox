@@ -4,7 +4,7 @@ import { app, globalShortcut } from 'electron';
 import started from 'electron-squirrel-startup';
 import { initAutostart } from './autostart';
 import { initConnection } from './connection';
-import { initDesktopEntry } from './desktop-entry';
+import { initDesktopEntry, settleAppImageHome } from './desktop-entry';
 import { initEmotes } from './emotes';
 import { initHotkey } from './hotkey';
 import { registerIpc } from './ipc';
@@ -39,6 +39,10 @@ const gotLock = app.requestSingleInstanceLock();
 
 // Linux on Wayland: XWayland by default so overlays can stay on top (see
 // session.ts). After the dev profile, because it reads a setting.
+// Linux AppImage: move to ~/Applications first, so everything after this
+// (the X11 copy too) already runs from the permanent path.
+if (gotLock) settleAppImageHome();
+
 const x11Copy = gotLock ? relaunchOnX11IfNeeded() : null;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
