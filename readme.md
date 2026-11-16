@@ -54,9 +54,26 @@ From then on it opens normally. Chatbox appears in the menu bar and has no Dock 
 
 ### Windows
 
+There are two ways to install Chatbox: the installer, or [Scoop](https://scoop.sh), a package manager for the terminal. With Scoop there's no SmartScreen warning, and updating is one command.
+
+**With the installer:**
+
 1. Download `Chatbox-Setup.exe` and run it.
 2. If SmartScreen shows "Windows protected your PC", click **More info → Run anyway**.
-3. Chatbox installs for your user (no admin rights needed), adds a Start menu entry and starts in the tray. Windows often hides new tray icons behind the **^** arrow next to the clock; drag it onto the taskbar to keep it visible.
+3. Chatbox installs for your user (no admin rights needed), adds a Start menu entry and starts in the tray.
+
+**With Scoop:** if you don't have Scoop yet, install it first with the command on [scoop.sh](https://scoop.sh). Then, in PowerShell:
+
+```powershell
+scoop bucket add chatbox https://github.com/MineRaphi/chatbox
+scoop install chatbox
+```
+
+Start Chatbox from the Start menu. To update it later, quit Chatbox from its tray menu and run `scoop update chatbox`. To remove it: `scoop uninstall chatbox`.
+
+Scoop installs the newest published version, beta versions included.
+
+**After installing:** Windows often hides new tray icons behind the **^** arrow next to the clock; drag the Chatbox icon onto the taskbar to keep it visible.
 
 **Portable version:** `Chatbox-win32-x64-….zip` needs no installation. Unzip it anywhere and run `Chatbox.exe`.
 
@@ -167,6 +184,8 @@ Turn it on in the tray menu or under **General**. Emotes from friends no longer 
 ### Updates
 
 Chatbox checks GitHub for new versions at startup and every 6 hours. When there's one, you get a notification once, and the tray menu and **Settings → Updates** offer the download for your system. It doesn't install anything by itself. Beta versions are only offered with **Include beta versions** on.
+
+If you installed Chatbox with Scoop, update it with `scoop update chatbox` instead of the offered download.
 
 ### Where settings are stored
 
@@ -300,6 +319,8 @@ Dev runs use their own settings folder, **Chatbox Dev**, so `npm start` and an i
 1. Set the new version in `package.json`, e.g. `"version": "2.1.0"`, and commit.
 2. Tag and push: `git tag v2.1.0 && git push origin main v2.1.0`.
 3. The workflow builds macOS (Apple Silicon and Intel), Windows and Linux and attaches everything to a **draft** release. When all four builds are done, open the draft on GitHub, check it, and click **Publish**.
+
+Publishing also starts a second workflow (`.github/workflows/scoop.yml`), which points the Scoop manifest, `bucket/chatbox.json`, at the new version and commits it to `main`. Pull before you continue working.
 
 The tag has to match the version in `package.json`, or the workflow stops. A version with a suffix, like `2.1.0-beta`, becomes a pre-release, so the Releases page's "latest" link keeps pointing at the last stable version. Running the workflow by hand from the Actions tab only builds; the files are then under the run's artifacts.
 
