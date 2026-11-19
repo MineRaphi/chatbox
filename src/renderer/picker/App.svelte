@@ -76,6 +76,7 @@
       favorites={settings?.favorites ?? []}
       {limited}
       {shownCount}
+      displayName={settings?.displayName ?? ''}
       onOpenSettings={() => (view = 'settings')}
     />
   {:else if settings}

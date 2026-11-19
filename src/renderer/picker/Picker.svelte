@@ -7,6 +7,7 @@
     type EmoteList,
   } from '../../shared/ipc';
   import EmoteImage from './EmoteImage.svelte';
+  import Members from './Members.svelte';
   import StatusDot from './StatusDot.svelte';
 
   interface Props {
@@ -15,6 +16,8 @@
     favorites: Emote[];
     limited: { retryInMs: number } | null;
     shownCount: number;
+    /** Your display name, marked in the list of who's online. */
+    displayName: string;
     onOpenSettings: () => void;
   }
   const {
@@ -23,6 +26,7 @@
     favorites,
     limited,
     shownCount,
+    displayName,
     onOpenSettings,
   }: Props = $props();
 
@@ -149,6 +153,7 @@
     spellcheck="false"
     aria-label="Search emotes"
   />
+  <Members {status} you={displayName} {shownCount} />
   <button
     class="rounded-md p-2 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
     onclick={onOpenSettings}

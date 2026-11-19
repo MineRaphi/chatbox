@@ -146,7 +146,7 @@ Press the hotkey to open the picker, or choose **Open picker** in the tray menu.
 
 The picker stays open after sending, so you can send several in a row. You see your own emotes too, the same way your friends do.
 
-Its footer shows your group and how many people are online; hover it to see who. If you're not connected, it says so, and emotes you send only appear on your own screen.
+Its footer shows your group and how many people are online. To see who, click the people button next to the settings cog: it lists everyone in your group, you first. If you're not connected, it says so, and emotes you send only appear on your own screen.
 
 ### Favorites
 
